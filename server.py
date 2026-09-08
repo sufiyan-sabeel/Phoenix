@@ -2,14 +2,14 @@
 import os
 import sys
 
-# Auto-resolve virtual environment dependencies on macOS / Linux if launched via bare system Python
+# Auto-resolve virtual environment and Homebrew dependencies on macOS / Linux
 _script_dir = os.path.dirname(os.path.abspath(__file__))
-_venv_dirs = [
+_candidate_site_dirs = [
     os.path.join(_script_dir, ".venv"),
     os.path.join(os.path.expanduser("~"), "PocketStrike-AI", ".venv"),
 ]
 # Inject venv site-packages into sys.path
-for _v in _venv_dirs:
+for _v in _candidate_site_dirs:
     if os.path.isdir(_v):
         import glob
         _sites = glob.glob(os.path.join(_v, "lib", "python*", "site-packages"))
@@ -19,19 +19,26 @@ for _v in _venv_dirs:
             if _s not in sys.path:
                 sys.path.insert(0, _s)
 
-# If requests or flask is still missing, attempt to re-exec with virtualenv python binary
+# Inject Homebrew site-packages on macOS
+if sys.platform == "darwin":
+    import glob
+    for _hb_pattern in ["/opt/homebrew/lib/python3.*/site-packages", "/usr/local/lib/python3.*/site-packages"]:
+        for _hb_site in glob.glob(_hb_pattern):
+            if _hb_site not in sys.path:
+                sys.path.insert(0, _hb_site)
+
+# If requests or flask is missing, attempt re-exec with virtualenv/Homebrew Python or auto-install
 try:
     import requests
     import flask
 except ImportError:
-    for _v in _venv_dirs:
+    for _v in _candidate_site_dirs:
         _py = os.path.join(_v, "bin", "python3") if sys.platform != "win32" else os.path.join(_v, "Scripts", "python.exe")
         if os.path.isfile(_py) and os.path.abspath(sys.executable) != os.path.abspath(_py):
             try:
                 os.execv(_py, [_py] + sys.argv)
             except Exception:
                 pass
-    # If still not found, try homebrew python
     if sys.platform == "darwin":
         for _hb in ["/opt/homebrew/bin/python3", "/usr/local/bin/python3"]:
             if os.path.isfile(_hb) and os.path.abspath(sys.executable) != os.path.abspath(_hb):
@@ -39,6 +46,13 @@ except ImportError:
                     os.execv(_hb, [_hb] + sys.argv)
                 except Exception:
                     pass
+    # If still missing, attempt automatic self-install
+    try:
+        import subprocess
+        print("⚡ Core dependencies missing. Auto-installing required packages (requests, flask, urllib3)...")
+        subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", "requests", "flask", "SpeechRecognition", "urllib3"], check=False)
+    except Exception:
+        pass
 
 import json
 import socket
@@ -6923,6 +6937,54 @@ def stop_voice():
     """Immediately stops active voice speech audio across devices and platforms."""
     detail = stop_speech()
     return jsonify({"status": "stopped", "detail": detail})
+
+@app.route('/api/voice/audio', methods=['GET', 'POST'])
+def api_voice_audio():
+    """Streams crisp natural Google TTS audio for direct mobile and desktop browser playback."""
+    text = request.args.get('text')
+    if not text and request.is_json:
+        text = (request.json or {}).get('text')
+    if not text:
+        text = request.form.get('text', '')
+        
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+    clean = re.sub(r'\[TOOL_CALL:.*?\]', '', str(text))
+    clean = re.sub(r'\[TOOL_RESULT:.*?output\].*?(?=(\[TOOL_CALL:|\[TOOL_RESULT:|$))', '', clean, flags=re.DOTALL)
+    clean = re.sub(r'\[HISTORY_SYNC\]:.*', '', clean)
+    clean = re.sub(r'```.*?```', '', clean, flags=re.DOTALL)
+    clean = re.sub(r'[*_~`#>\[\]|]', '', clean)
+    clean = re.sub(r'https?://\S+', '', clean)
+    clean = re.sub(r'[\U00010000-\U0010ffff]', '', clean)
+    clean = re.sub(r'\s+', ' ', clean).strip()
+
+    sentences = re.findall(r'[^.!?]+[.!?]+(?:\s|$)', clean)
+    if sentences and len(sentences) > 3:
+        clean = "".join(sentences[:3]).strip()
+    elif len(clean) > 280:
+        clean = clean[:280].strip()
+
+    if not clean or len(clean) < 2:
+        clean = "I'm on it."
+
+    try:
+        import urllib.request
+        import urllib.parse
+        encoded = urllib.parse.quote(clean[:300])
+        tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=en&client=tw-ob"
+        req = urllib.request.Request(tts_url, headers={
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+        })
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            audio_bytes = resp.read()
+            return Response(audio_bytes, mimetype="audio/mpeg", headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Content-Length": str(len(audio_bytes)),
+                "Accept-Ranges": "bytes"
+            })
+    except Exception as e:
+        return jsonify({"error": f"TTS audio streaming failed: {str(e)}"}), 502
 
 
 if __name__ == '__main__':

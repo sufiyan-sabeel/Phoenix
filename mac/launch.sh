@@ -23,18 +23,20 @@ elif [ -d "$HOME/PocketStrike-AI/.venv" ]; then
     source "$HOME/PocketStrike-AI/.venv/bin/activate" 2>/dev/null || true
 fi
 
-# Resolve exact Python interpreter prioritizing virtual environment
+# Resolve exact Python interpreter prioritizing virtual environment & Homebrew
 PYTHON_BIN="python3"
 if [ -x "$PROJECT_ROOT/.venv/bin/python3" ]; then
     PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python3"
 elif [ -x "$PROJECT_ROOT/.venv/bin/python" ]; then
     PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python"
-elif [ -x "$HOME/PocketStrike-AI/.venv/bin/python3" ]; then
-    PYTHON_BIN="$HOME/PocketStrike-AI/.venv/bin/python3"
 elif [ -x "/opt/homebrew/bin/python3" ]; then
     PYTHON_BIN="/opt/homebrew/bin/python3"
 elif [ -x "/usr/local/bin/python3" ]; then
     PYTHON_BIN="/usr/local/bin/python3"
+elif [ -x "$HOME/PocketStrike-AI/.venv/bin/python3" ]; then
+    PYTHON_BIN="$HOME/PocketStrike-AI/.venv/bin/python3"
+elif command -v python3 &>/dev/null; then
+    PYTHON_BIN="$(command -v python3)"
 fi
 
 # Colors (UI-Matching Cyber Theme)
@@ -115,8 +117,13 @@ ensure_dependencies() {
         if [ -x "$PROJECT_ROOT/.venv/bin/python3" ]; then
             PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python3"
             source "$PROJECT_ROOT/.venv/bin/activate" 2>/dev/null || true
+        elif [ -x "$PROJECT_ROOT/.venv/bin/python" ]; then
+            PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python"
+            source "$PROJECT_ROOT/.venv/bin/activate" 2>/dev/null || true
         elif [ -x "/opt/homebrew/bin/python3" ]; then
             PYTHON_BIN="/opt/homebrew/bin/python3"
+        elif [ -x "/usr/local/bin/python3" ]; then
+            PYTHON_BIN="/usr/local/bin/python3"
         fi
     fi
 }

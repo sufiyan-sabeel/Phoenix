@@ -1493,6 +1493,17 @@ function stopVoiceSpeaking() {
     isExplicitlyStopped = true;
     currentSpeechUtterance = null;
 
+    // Immediately stop HTML5 audio playback (phones / browsers)
+    const player = document.getElementById('voiceAudioPlayer');
+    if (player) {
+        try {
+            player.pause();
+            player.currentTime = 0;
+            player.removeAttribute('src');
+            player.load();
+        } catch (e) {}
+    }
+
     if ('speechSynthesis' in window) {
         try {
             window.speechSynthesis.cancel();
@@ -1528,7 +1539,7 @@ function stopVoiceSpeaking() {
     }
 }
 
-// Prime speech synthesis on user interaction to unlock mobile audio autoplay policy
+// Prime speech synthesis & HTML5 audio on user interaction to unlock mobile autoplay restrictions
 function primeSpeechSynthesis() {
     if ('speechSynthesis' in window) {
         try {
@@ -1538,9 +1549,18 @@ function primeSpeechSynthesis() {
             window.speechSynthesis.speak(prime);
         } catch (e) {}
     }
+    // Unlock HTML5 audio playback on mobile browsers via user gesture
+    const player = document.getElementById('voiceAudioPlayer');
+    if (player) {
+        try {
+            player.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+            player.play().catch(() => {});
+        } catch (e) {}
+    }
+    getAudioContext();
 }
 
-// Speak AI Response with Anti-Echo Microphone Muting & Multi-Device Fallback (Android/Termux, Mac, Win, Linux)
+// Speak AI Response with High-Fidelity Audio Streaming & Multi-Device Fallback (Android, Termux, Mac, Win, Linux)
 function speakTextResponse(text, isGreeting = false) {
     isExplicitlyStopped = false;
     const spokenText = cleanTextForSpeech(text);
@@ -1567,6 +1587,9 @@ function speakTextResponse(text, isGreeting = false) {
     const headerVoiceBtn = document.getElementById('voiceBtn');
     if (headerVoiceBtn) headerVoiceBtn.classList.add('voice-speaking');
 
+    const stopBtn = document.getElementById('voiceHudStopBtn');
+    if (stopBtn) stopBtn.style.display = 'inline-flex';
+
     let speechFinished = false;
     let fallbackTimer = null;
 
@@ -1576,16 +1599,23 @@ function speakTextResponse(text, isGreeting = false) {
         currentSpeechUtterance = null;
         if (fallbackTimer) clearTimeout(fallbackTimer);
 
+        const player = document.getElementById('voiceAudioPlayer');
+        if (player) {
+            try {
+                player.pause();
+                player.currentTime = 0;
+            } catch (e) {}
+        }
+
         if (floatingBtn) floatingBtn.style.display = 'none';
         if (headerVoiceBtn) headerVoiceBtn.classList.remove('voice-speaking');
 
-        const stopBtn = document.getElementById('voiceHudStopBtn');
         if (stopBtn) stopBtn.style.display = 'none';
         const pauseBtn = document.getElementById('voiceHudPauseBtn');
         if (pauseBtn) pauseBtn.style.display = 'none';
 
         if (isGreeting) {
-            // After saying "Hello, how can I assist you?", transition straight to listening
+            // After greeting, transition straight to listening
             voiceState = 'activated';
             setVoiceHudState('listening', 'I am listening...');
             setTimeout(() => {
@@ -1605,58 +1635,110 @@ function speakTextResponse(text, isGreeting = false) {
         }
     };
 
-    // Android Chrome & mobile stall safety timer: guarantees HUD never gets stuck in speaking
+    // Staggered duration safety timer: guarantees HUD never gets stuck in speaking
     const wordCount = spokenText.split(/\s+/).length;
-    const estimatedDuration = Math.max(3000, (wordCount / 2.2) * 1000 + 3500);
+    const estimatedDuration = Math.max(3500, (wordCount / 2.0) * 1000 + 4000);
     fallbackTimer = setTimeout(onSpeechFinish, estimatedDuration);
 
-    // 1. Try Browser Speech Synthesis
-    if ('speechSynthesis' in window) {
+    const player = document.getElementById('voiceAudioPlayer');
+    let audioStarted = false;
+
+    // Strategy 1: HTML5 Audio Stream from /api/voice/audio (Ultra-reliable on Android Chrome, iOS Safari & Mobile)
+    if (player) {
         try {
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.resume();
-
-            const utterance = new SpeechSynthesisUtterance(spokenText);
-            currentSpeechUtterance = utterance;
-            utterance.rate = 1.02;
-            utterance.pitch = 1.0;
-            utterance.lang = 'en-US';
-
-            const voices = window.speechSynthesis.getVoices();
-            if (voices && voices.length > 0) {
-                const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Samantha')));
-                if (preferredVoice) utterance.voice = preferredVoice;
-            }
-
-            utterance.onend = onSpeechFinish;
-            utterance.onerror = (e) => {
-                if (isExplicitlyStopped || e.error === 'canceled' || e.error === 'interrupted') {
-                    onSpeechFinish();
-                    return;
+            player.pause();
+            player.currentTime = 0;
+            player.onended = onSpeechFinish;
+            player.onerror = () => {
+                if (!audioStarted && !isExplicitlyStopped) {
+                    fallbackToSynthesis();
                 }
-                // Fallback to server host TTS on Android Termux / Mac / Linux / Windows
-                fetch('/api/voice/speak', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: spokenText })
-                }).catch(() => {});
-                onSpeechFinish();
             };
-
-            window.speechSynthesis.speak(utterance);
-            return;
+            player.onplaying = () => {
+                audioStarted = true;
+            };
+            player.src = '/api/voice/audio?text=' + encodeURIComponent(spokenText);
+            const playPromise = player.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    audioStarted = true;
+                }).catch((err) => {
+                    console.warn("Mobile HTML5 audio play rejected, attempting speech synthesis fallback:", err);
+                    if (!isExplicitlyStopped) {
+                        fallbackToSynthesis();
+                    }
+                });
+            }
         } catch (e) {
-            console.error("Speech Synthesis error:", e);
+            fallbackToSynthesis();
         }
+    } else {
+        fallbackToSynthesis();
     }
 
-    // 2. Server Host TTS Fallback (Termux-TTS on Android, macOS 'say', Windows SAPI)
-    if (!isExplicitlyStopped) {
-        fetch('/api/voice/speak', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: spokenText })
-        }).catch(() => {});
+    function fallbackToSynthesis() {
+        if (audioStarted || isExplicitlyStopped) return;
+
+        // Strategy 2: Browser Speech Synthesis (Chrome / Edge / Safari Desktop)
+        if ('speechSynthesis' in window) {
+            try {
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                    window.speechSynthesis.cancel();
+                }
+                window.speechSynthesis.resume();
+
+                const utterance = new SpeechSynthesisUtterance(spokenText);
+                currentSpeechUtterance = utterance;
+                utterance.rate = 1.02;
+                utterance.pitch = 1.0;
+                utterance.lang = 'en-US';
+
+                const voices = window.speechSynthesis.getVoices();
+                if (voices && voices.length > 0) {
+                    const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Samantha')));
+                    if (preferredVoice) utterance.voice = preferredVoice;
+                }
+
+                utterance.onstart = () => {
+                    audioStarted = true;
+                };
+
+                utterance.onend = onSpeechFinish;
+                utterance.onerror = (e) => {
+                    if (isExplicitlyStopped || e.error === 'canceled' || e.error === 'interrupted') {
+                        onSpeechFinish();
+                        return;
+                    }
+                    triggerServerHostTts();
+                };
+
+                window.speechSynthesis.speak(utterance);
+
+                // Watchdog: If Web Speech fails to start in 500ms on mobile Chrome, fallback to host TTS
+                setTimeout(() => {
+                    if (!audioStarted && !isExplicitlyStopped) {
+                        triggerServerHostTts();
+                    }
+                }, 500);
+
+                return;
+            } catch (e) {
+                console.error("Speech Synthesis error:", e);
+            }
+        }
+
+        // Strategy 3: Server Host TTS (Termux on Android, macOS say, Windows SAPI)
+        triggerServerHostTts();
+    }
+
+    function triggerServerHostTts() {
+        if (!isExplicitlyStopped) {
+            fetch('/api/voice/speak', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: spokenText })
+            }).catch(() => {});
+        }
     }
 }
 
@@ -1749,7 +1831,8 @@ function initVoiceAssistant() {
         let transcript = '';
         let isFinal = false;
 
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        // Accumulate full transcript across all results so user sentences are never truncated mid-speech
+        for (let i = 0; i < event.results.length; ++i) {
             transcript += event.results[i][0].transcript;
             if (event.results[i].isFinal) isFinal = true;
         }
@@ -1779,7 +1862,8 @@ function initVoiceAssistant() {
                 autoGrowInput();
 
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
-                const silenceDelay = isFinal ? 400 : 900;
+                // Conversational silence delay: 1.7s on final phrase, 2.6s on interim phrase
+                const silenceDelay = isFinal ? 1700 : 2600;
                 speechSilenceTimer = setTimeout(() => {
                     submitVoicePrompt();
                 }, silenceDelay);
@@ -1797,7 +1881,8 @@ function initVoiceAssistant() {
 
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
 
-                const silenceDelay = isFinal ? 400 : 900;
+                // Conversational silence delay: 1.7s on final phrase, 2.6s on interim phrase
+                const silenceDelay = isFinal ? 1700 : 2600;
                 speechSilenceTimer = setTimeout(() => {
                     submitVoicePrompt();
                 }, silenceDelay);

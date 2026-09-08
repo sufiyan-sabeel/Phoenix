@@ -3,9 +3,39 @@
 # PocketstrikeAI Launcher Script for Termux
 # Shows a menu to configure or start the server.
 
+# Auto-detect macOS (Darwin) and delegate to mac/launch.sh
+if [[ "$OSTYPE" == "darwin"* ]] || [ "$(uname -s 2>/dev/null)" = "Darwin" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+    if [ -f "$SCRIPT_DIR/mac/launch.sh" ]; then
+        chmod +x "$SCRIPT_DIR/mac/launch.sh" 2>/dev/null || true
+        exec "$SCRIPT_DIR/mac/launch.sh" "$@"
+    fi
+fi
+
+# Auto-detect Linux (Debian/Ubuntu/Arch/Fedora/Kali) when not running in Termux
+if [ ! -x "$(command -v pkg)" ] && { [ -f "/etc/os-release" ] || [ -f "/etc/debian_version" ]; }; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+    if [ -f "$SCRIPT_DIR/linux/launch.sh" ]; then
+        chmod +x "$SCRIPT_DIR/linux/launch.sh" 2>/dev/null || true
+        exec "$SCRIPT_DIR/linux/launch.sh" "$@"
+    fi
+fi
+
 # Resolve project root directory safely
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 cd "$SCRIPT_DIR" || exit 1
+
+# Resolve exact Python interpreter (prioritize venv, then python3, then python)
+PYTHON_BIN="python3"
+if [ -x "$SCRIPT_DIR/.venv/bin/python3" ]; then
+    PYTHON_BIN="$SCRIPT_DIR/.venv/bin/python3"
+elif [ -x "$SCRIPT_DIR/.venv/bin/python" ]; then
+    PYTHON_BIN="$SCRIPT_DIR/.venv/bin/python"
+elif command -v python3 &>/dev/null; then
+    PYTHON_BIN="python3"
+elif command -v python &>/dev/null; then
+    PYTHON_BIN="python"
+fi
 
 # Colors (UI-Matching Cyber Theme)
 BLUE='\033[38;5;39m' # Vibrant Cyber Blue
@@ -44,7 +74,7 @@ show_menu() {
     echo -e " Status: $SETUP_STATUS"
     
     if [ "$CONFIG_EXISTS" = true ]; then
-        INFO=$(python -c '
+        INFO=$("$PYTHON_BIN" -c '
 import json
 try:
     with open("config.json") as f:
@@ -56,7 +86,7 @@ except Exception:
     print("Invalid Configuration")
 ' 2>/dev/null)
         echo -e " Active Model: ${CYAN}${INFO}${NC}"
-        VOICE_INFO=$(python -c '
+        VOICE_INFO=$("$PYTHON_BIN" -c '
 import json
 try:
     with open("config.json") as f:
@@ -77,7 +107,7 @@ except Exception:
 }
 
 run_setup() {
-    python setup.py
+    "$PYTHON_BIN" setup.py
     echo -e "\nPress Enter to return to menu..."
     read -r
 }
@@ -94,8 +124,8 @@ launch_server() {
         return
     fi
 
-    echo -e "\n${CYAN}Starting PocketstrikeAI Server...${NC}"
-    python server.py
+    echo -e "\n${CYAN}Starting PocketstrikeAI Server using ($PYTHON_BIN)...${NC}"
+    "$PYTHON_BIN" server.py
 }
 
 while true; do

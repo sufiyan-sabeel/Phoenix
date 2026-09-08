@@ -67,17 +67,17 @@ mkdir -p "$HOME/PocketStrike-AI/workspace" 2>/dev/null || true
 # 4. Install Python dependencies
 echo -e "\n${BLUE}⚡ [3/4] Installing Python dependency layers...${NC}"
 
-# Find Python 3 binary on macOS
+# Prioritize Homebrew Python (always has full pip, wheel, and venv support)
 PYTHON_CMD=""
-for p in "$(/usr/bin/which python3 2>/dev/null)" "/opt/homebrew/bin/python3" "/usr/local/bin/python3" "$(/usr/bin/which python 2>/dev/null)"; do
-    if [ -n "$p" ] && [ -x "$p" ]; then
+for p in "/opt/homebrew/bin/python3" "/usr/local/bin/python3" "$(command -v python3 2>/dev/null)"; do
+    if [ -n "$p" ] && [ -x "$p" ] && [ "$p" != "/usr/bin/python3" ]; then
         PYTHON_CMD="$p"
         break
     fi
 done
 
 if [ -z "$PYTHON_CMD" ]; then
-    PYTHON_CMD="python3"
+    PYTHON_CMD="$(command -v python3 || echo '/usr/bin/python3')"
 fi
 
 echo -e "Using Python interpreter: ${CYAN}${PYTHON_CMD}${NC}"
@@ -88,12 +88,21 @@ echo -e "${BLUE}Configuring isolated Python virtual environment at ${CYAN}$VENV_
 
 if [ ! -d "$VENV_DIR" ] || [ ! -f "$VENV_DIR/bin/python" ]; then
     rm -rf "$VENV_DIR" 2>/dev/null || true
-    $PYTHON_CMD -m venv "$VENV_DIR" || python3 -m venv "$VENV_DIR" || true
+    "$PYTHON_CMD" -m venv "$VENV_DIR" || python3 -m venv "$VENV_DIR" || true
+fi
+
+# Ensure pip exists in the virtual environment
+if [ -f "$VENV_DIR/bin/python" ] && [ ! -f "$VENV_DIR/bin/pip" ]; then
+    "$VENV_DIR/bin/python" -m ensurepip --upgrade 2>/dev/null || \
+    curl -sS https://bootstrap.pypa.io/get-pip.py | "$VENV_DIR/bin/python" 2>/dev/null || true
 fi
 
 # Determine pip and python binaries
 if [ -f "$VENV_DIR/bin/pip" ]; then
     PIP_EXEC="$VENV_DIR/bin/pip"
+    PY_EXEC="$VENV_DIR/bin/python"
+elif [ -f "$VENV_DIR/bin/python" ]; then
+    PIP_EXEC="$VENV_DIR/bin/python -m pip"
     PY_EXEC="$VENV_DIR/bin/python"
 else
     PIP_EXEC="$PYTHON_CMD -m pip"
@@ -108,10 +117,8 @@ $PIP_EXEC install --upgrade pip 2>/dev/null || true
 echo -e "${BLUE}Installing required packages: flask, requests, SpeechRecognition, urllib3...${NC}"
 $PIP_EXEC install flask requests SpeechRecognition urllib3 || \
 $PY_EXEC -m pip install --break-system-packages flask requests SpeechRecognition urllib3 || \
-$PY_EXEC -m pip install flask requests SpeechRecognition urllib3 || {
-    echo -e "${YELLOW}Retrying package installation with isolated flags...${NC}"
-    $PIP_EXEC install --no-cache-dir flask requests SpeechRecognition urllib3
-}
+$PY_EXEC -m pip install flask requests SpeechRecognition urllib3 || \
+$PIP_EXEC install --no-cache-dir flask requests SpeechRecognition urllib3 || true
 
 # Install optional packages (opencv-python) without aborting on Apple Silicon compile issues
 echo -e "${BLUE}Installing optional packages (opencv-python)...${NC}"
