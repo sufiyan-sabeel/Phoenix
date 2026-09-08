@@ -1592,6 +1592,24 @@ function primeSpeechSynthesis() {
     getAudioContext();
 }
 
+// Preload browser voices asynchronously
+if ('speechSynthesis' in window) {
+    try {
+        window.speechSynthesis.onvoiceschanged = () => {
+            try { window.speechSynthesis.getVoices(); } catch (e) {}
+        };
+        window.speechSynthesis.getVoices();
+    } catch (e) {}
+}
+
+// Global user interaction listener to unlock audio & speech synthesis on mobile
+const unlockAudioOnGesture = () => {
+    primeSpeechSynthesis();
+};
+document.addEventListener('click', unlockAudioOnGesture, { once: true });
+document.addEventListener('touchstart', unlockAudioOnGesture, { once: true });
+document.addEventListener('keydown', unlockAudioOnGesture, { once: true });
+
 // Speak AI Response with High-Fidelity Audio Streaming & Multi-Device Fallback (Android, Termux, Mac, Win, Linux)
 function speakTextResponse(text, isGreeting = false) {
     isExplicitlyStopped = false;
@@ -1711,17 +1729,16 @@ function speakTextResponse(text, isGreeting = false) {
     function fallbackToSynthesis() {
         if (audioStarted || isExplicitlyStopped) return;
 
-        // Strategy 2: Browser Speech Synthesis (Chrome / Edge / Safari Desktop)
+        // Strategy 2: Browser Speech Synthesis (Chrome / Edge / Safari Desktop & Mobile)
         if ('speechSynthesis' in window) {
             try {
-                if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-                    window.speechSynthesis.cancel();
-                }
+                window.speechSynthesis.cancel();
                 window.speechSynthesis.resume();
 
                 const utterance = new SpeechSynthesisUtterance(spokenText);
+                window._activeSpeechUtterance = utterance; // Prevent garbage collection from cutting speech
                 currentSpeechUtterance = utterance;
-                utterance.rate = 1.02;
+                utterance.rate = 1.0;
                 utterance.pitch = 1.0;
                 utterance.lang = 'en-US';
 
@@ -1735,8 +1752,13 @@ function speakTextResponse(text, isGreeting = false) {
                     audioStarted = true;
                 };
 
-                utterance.onend = onSpeechFinish;
+                utterance.onend = () => {
+                    window._activeSpeechUtterance = null;
+                    onSpeechFinish();
+                };
+
                 utterance.onerror = (e) => {
+                    window._activeSpeechUtterance = null;
                     if (isExplicitlyStopped || e.error === 'canceled' || e.error === 'interrupted') {
                         onSpeechFinish();
                         return;
@@ -1746,12 +1768,12 @@ function speakTextResponse(text, isGreeting = false) {
 
                 window.speechSynthesis.speak(utterance);
 
-                // Watchdog: If Web Speech fails to start in 500ms on mobile Chrome, fallback to host TTS
+                // Watchdog: If Web Speech fails to start in 800ms, fallback to host TTS
                 setTimeout(() => {
                     if (!audioStarted && !isExplicitlyStopped) {
                         triggerServerHostTts();
                     }
-                }, 500);
+                }, 800);
 
                 return;
             } catch (e) {

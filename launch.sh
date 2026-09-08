@@ -4,13 +4,15 @@
 # Shows a menu to configure or start the server.
 
 # Auto-detect macOS (Darwin) and delegate to mac/launch.sh
-if [[ "$OSTYPE" == "darwin"* ]] || [ "$(uname -s 2>/dev/null)" = "Darwin" ]; then
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-    if [ -f "$SCRIPT_DIR/mac/launch.sh" ]; then
-        chmod +x "$SCRIPT_DIR/mac/launch.sh" 2>/dev/null || true
-        exec "$SCRIPT_DIR/mac/launch.sh" "$@"
-    fi
-fi
+case "$(uname -s 2>/dev/null)" in
+    Darwin*)
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+        if [ -f "$SCRIPT_DIR/mac/launch.sh" ]; then
+            chmod +x "$SCRIPT_DIR/mac/launch.sh" 2>/dev/null || true
+            exec "$SCRIPT_DIR/mac/launch.sh" "$@"
+        fi
+        ;;
+esac
 
 # Auto-detect Linux (Debian/Ubuntu/Arch/Fedora/Kali) when not running in Termux
 if [ ! -x "$(command -v pkg)" ] && { [ -f "/etc/os-release" ] || [ -f "/etc/debian_version" ]; }; then

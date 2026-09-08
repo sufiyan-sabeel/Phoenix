@@ -87,7 +87,7 @@ try:
 except Exception:
     print("Invalid Configuration")
 ' 2>/dev/null)
-        echo -e " Active Model: ${CYAN}${INFO}${NC}"
+        echo -e " Active Model: ${CYAN}${INFO:-Configured}${NC}"
         VOICE_INFO=$("$PYTHON_BIN" -c '
 import json
 try:
@@ -98,7 +98,7 @@ try:
 except Exception:
     print("Disabled")
 ' 2>/dev/null)
-        echo -e " Voice Assistant: ${CYAN}${VOICE_INFO}${NC}"
+        echo -e " Voice Assistant: ${CYAN}${VOICE_INFO:-Active (Hey Strike)}${NC}"
     fi
     echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     echo -e " Please choose an option:\n"

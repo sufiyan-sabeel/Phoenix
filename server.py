@@ -46,13 +46,34 @@ except ImportError:
                     os.execv(_hb, [_hb] + sys.argv)
                 except Exception:
                     pass
-    # If still missing, attempt automatic self-install
+    # If still missing, attempt automatic self-install / venv bootstrap
     try:
         import subprocess
         print("⚡ Core dependencies missing. Auto-installing required packages (requests, flask, urllib3)...")
-        subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", "requests", "flask", "SpeechRecognition", "urllib3"], check=False)
-    except Exception:
-        pass
+        _res = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", "requests", "flask", "SpeechRecognition", "urllib3"], check=False)
+        if _res.returncode != 0:
+            # If system python has no pip (e.g. macOS /usr/bin/python3), bootstrap virtualenv
+            _venv_path = os.path.join(_script_dir, ".venv")
+            subprocess.run([sys.executable, "-m", "venv", _venv_path], check=False)
+            _venv_py = os.path.join(_venv_path, "bin", "python3") if sys.platform != "win32" else os.path.join(_venv_path, "Scripts", "python.exe")
+            if os.path.isfile(_venv_py):
+                subprocess.run([_venv_py, "-m", "ensurepip", "--upgrade"], check=False)
+                _venv_pip = os.path.join(_venv_path, "bin", "pip") if sys.platform != "win32" else os.path.join(_venv_path, "Scripts", "pip.exe")
+                if not os.path.isfile(_venv_pip):
+                    try:
+                        import urllib.request
+                        _get_pip = os.path.join(_venv_path, "get-pip.py")
+                        urllib.request.urlretrieve("https://bootstrap.pypa.io/get-pip.py", _get_pip)
+                        subprocess.run([_venv_py, _get_pip], check=False)
+                    except Exception:
+                        pass
+                subprocess.run([_venv_py, "-m", "pip", "install", "requests", "flask", "SpeechRecognition", "urllib3"], check=False)
+                try:
+                    os.execv(_venv_py, [_venv_py] + sys.argv)
+                except Exception:
+                    pass
+    except Exception as _e:
+        print(f"Warning during auto-install: {_e}")
 
 import json
 import socket
@@ -6968,8 +6989,8 @@ def api_voice_audio():
     sentences = re.findall(r'[^.!?]+[.!?]+(?:\s|$)', clean)
     if sentences and len(sentences) > 3:
         clean = "".join(sentences[:3]).strip()
-    elif len(clean) > 280:
-        clean = clean[:280].strip()
+    elif len(clean) > 320:
+        clean = clean[:320].strip()
 
     if not clean or len(clean) < 2:
         clean = "I'm on it."
@@ -6977,18 +6998,42 @@ def api_voice_audio():
     try:
         import urllib.request
         import urllib.parse
-        encoded = urllib.parse.quote(clean[:300])
-        tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=en&client=tw-ob"
-        req = urllib.request.Request(tts_url, headers={
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
-        })
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            audio_bytes = resp.read()
-            return Response(audio_bytes, mimetype="audio/mpeg", headers={
+        
+        # Split into chunks of max 130 characters so Google Translate TTS never rejects with HTTP 400
+        words = clean.split()
+        chunks = []
+        curr = []
+        curr_len = 0
+        for w in words:
+            if curr_len + len(w) + 1 > 130:
+                if curr:
+                    chunks.append(" ".join(curr))
+                curr = [w]
+                curr_len = len(w)
+            else:
+                curr.append(w)
+                curr_len += len(w) + 1
+        if curr:
+            chunks.append(" ".join(curr))
+
+        combined_audio = b""
+        for chunk in chunks:
+            encoded = urllib.parse.quote(chunk)
+            tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=en&client=tw-ob"
+            req = urllib.request.Request(tts_url, headers={
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+            })
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                combined_audio += resp.read()
+
+        if combined_audio:
+            return Response(combined_audio, mimetype="audio/mpeg", headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Content-Length": str(len(audio_bytes)),
+                "Content-Length": str(len(combined_audio)),
                 "Accept-Ranges": "bytes"
             })
+        else:
+            return jsonify({"error": "Empty audio generated"}), 502
     except Exception as e:
         return jsonify({"error": f"TTS audio streaming failed: {str(e)}"}), 502
 

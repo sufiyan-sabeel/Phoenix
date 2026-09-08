@@ -37,27 +37,18 @@ echo -e "🚀 Starting macOS high-performance system deployment..."
 echo -e "💻 Target OS: macOS (Apple Silicon M1/M2/M3/M4 & Intel)"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}\n"
 
-# 1. Check for Homebrew
+# 1. Check for Homebrew (optional on macOS, but provides nmap and modern python)
 if [ ! -x "$(command -v brew)" ]; then
-    echo -e "${YELLOW}Homebrew package manager not found. Installing Homebrew...${NC}"
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
-        echo -e "${RED}Error: Failed to install Homebrew automatically. Please install Homebrew manually from https://brew.sh${NC}"
-        exit 1
-    }
-    if [ -x "/opt/homebrew/bin/brew" ]; then
-        eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)" || true
-    elif [ -x "/usr/local/bin/brew" ]; then
-        eval "$(/usr/local/bin/brew shellenv 2>/dev/null)" || true
-    fi
+    echo -e "${YELLOW}Notice: Homebrew not detected.${NC}"
+    echo -e "${CYAN}Proceeding with native macOS Python virtual environment deployment...${NC}"
+    echo -e "${CYAN}(To install security tools like nmap later, visit https://brew.sh)${NC}\n"
+else
+    # Update Homebrew formulae & deploy tools
+    echo -e "${BLUE}⚡ [1/4] Checking Homebrew formulae...${NC}"
+    brew update 2>/dev/null || true
+    echo -e "\n${BLUE}⚡ [2/4] Deploying macOS security toolchain via brew...${NC}"
+    brew install python3 git nmap 2>/dev/null || echo -e "${YELLOW}Warning: Homebrew packages already installed or up-to-date.${NC}"
 fi
-
-# 2. Update Homebrew formulae
-echo -e "${BLUE}⚡ [1/4] Checking Homebrew formulae...${NC}"
-brew update || echo -e "${YELLOW}Warning: brew update encountered minor network warnings, proceeding...${NC}"
-
-# 3. Install required CLI tools via brew
-echo -e "\n${BLUE}⚡ [2/4] Deploying macOS security toolchain & dependencies...${NC}"
-brew install python3 git nmap || echo -e "${YELLOW}Warning: brew packages are up-to-date or already installed.${NC}"
 
 # Create workspace directory
 echo -e "\n${BLUE}📁 Initializing macOS workspace directory (~/PocketStrike-AI/workspace)...${NC}"
@@ -67,10 +58,10 @@ mkdir -p "$HOME/PocketStrike-AI/workspace" 2>/dev/null || true
 # 4. Install Python dependencies
 echo -e "\n${BLUE}⚡ [3/4] Installing Python dependency layers...${NC}"
 
-# Prioritize Homebrew Python (always has full pip, wheel, and venv support)
+# Prioritize Homebrew Python, Python.org framework Python, or system python3
 PYTHON_CMD=""
-for p in "/opt/homebrew/bin/python3" "/usr/local/bin/python3" "$(command -v python3 2>/dev/null)"; do
-    if [ -n "$p" ] && [ -x "$p" ] && [ "$p" != "/usr/bin/python3" ]; then
+for p in "/opt/homebrew/bin/python3" "/usr/local/bin/python3" "/Library/Frameworks/Python.framework/Versions/Current/bin/python3" "$(command -v python3 2>/dev/null)" "/usr/bin/python3"; do
+    if [ -n "$p" ] && [ -x "$p" ]; then
         PYTHON_CMD="$p"
         break
     fi
@@ -86,24 +77,32 @@ echo -e "Using Python interpreter: ${CYAN}${PYTHON_CMD}${NC}"
 VENV_DIR="$PROJECT_ROOT/.venv"
 echo -e "${BLUE}Configuring isolated Python virtual environment at ${CYAN}$VENV_DIR${NC}...${NC}"
 
-if [ ! -d "$VENV_DIR" ] || [ ! -f "$VENV_DIR/bin/python" ]; then
+if [ ! -d "$VENV_DIR" ] || [ ! -x "$VENV_DIR/bin/python" ]; then
     rm -rf "$VENV_DIR" 2>/dev/null || true
-    "$PYTHON_CMD" -m venv "$VENV_DIR" || python3 -m venv "$VENV_DIR" || true
+    "$PYTHON_CMD" -m venv "$VENV_DIR" 2>/dev/null || python3 -m venv "$VENV_DIR" 2>/dev/null || true
 fi
 
 # Ensure pip exists in the virtual environment
-if [ -f "$VENV_DIR/bin/python" ] && [ ! -f "$VENV_DIR/bin/pip" ]; then
-    "$VENV_DIR/bin/python" -m ensurepip --upgrade 2>/dev/null || \
-    curl -sS https://bootstrap.pypa.io/get-pip.py | "$VENV_DIR/bin/python" 2>/dev/null || true
+if [ -x "$VENV_DIR/bin/python" ] && [ ! -x "$VENV_DIR/bin/pip" ]; then
+    echo -e "${CYAN}Bootstrapping pip inside virtual environment...${NC}"
+    "$VENV_DIR/bin/python" -m ensurepip --upgrade 2>/dev/null || true
+    if [ ! -x "$VENV_DIR/bin/pip" ]; then
+        curl -sSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py 2>/dev/null && \
+        "$VENV_DIR/bin/python" /tmp/get-pip.py 2>/dev/null || true
+        rm -f /tmp/get-pip.py 2>/dev/null || true
+    fi
 fi
 
 # Determine pip and python binaries
-if [ -f "$VENV_DIR/bin/pip" ]; then
+if [ -x "$VENV_DIR/bin/pip" ]; then
     PIP_EXEC="$VENV_DIR/bin/pip"
     PY_EXEC="$VENV_DIR/bin/python"
-elif [ -f "$VENV_DIR/bin/python" ]; then
+elif [ -x "$VENV_DIR/bin/python" ]; then
     PIP_EXEC="$VENV_DIR/bin/python -m pip"
     PY_EXEC="$VENV_DIR/bin/python"
+elif command -v pip3 &>/dev/null; then
+    PIP_EXEC="pip3"
+    PY_EXEC="$PYTHON_CMD"
 else
     PIP_EXEC="$PYTHON_CMD -m pip"
     PY_EXEC="$PYTHON_CMD"
