@@ -1835,8 +1835,9 @@ function initVoiceAssistant() {
         return;
     }
 
+    const isMobileDevice = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
     speechRecognitionObj = new SpeechRecognition();
-    speechRecognitionObj.continuous = true; // Always on!
+    speechRecognitionObj.continuous = !isMobileDevice; // On mobile, single-utterance mode prevents Android Chrome from mangling interim audio buffers
     speechRecognitionObj.interimResults = true;
     speechRecognitionObj.lang = 'en-US';
 
@@ -1857,19 +1858,92 @@ function initVoiceAssistant() {
     if (inputVoiceBtn) inputVoiceBtn.addEventListener('click', toggleVoice);
     if (voiceHudClose) voiceHudClose.addEventListener('click', () => stopVoiceListening());
 
+    // Helper to parse, clean, and deduplicate speech recognition results across Desktop and Mobile
+    function parseSpeechResults(results) {
+        let finalPhrases = [];
+        let currentInterim = '';
+        let hasFinalResult = false;
+
+        for (let i = 0; i < results.length; ++i) {
+            const result = results[i];
+            if (!result || !result[0] || !result[0].transcript) continue;
+            const text = result[0].transcript.trim();
+            if (!text) continue;
+
+            if (result.isFinal) {
+                hasFinalResult = true;
+                currentInterim = ''; // Clear interim once finalized
+                if (finalPhrases.length > 0) {
+                    const lastPhrase = finalPhrases[finalPhrases.length - 1];
+                    // If current final phrase already extends or repeats last phrase (Android cumulative bug), replace it
+                    if (text.toLowerCase().startsWith(lastPhrase.toLowerCase())) {
+                        finalPhrases[finalPhrases.length - 1] = text;
+                        continue;
+                    }
+                    // Check word overlap at boundary (e.g. "what are" + "are today's" -> "what are today's")
+                    const wordsLast = lastPhrase.split(/\s+/);
+                    const wordsCur = text.split(/\s+/);
+                    let merged = false;
+                    const maxOverlap = Math.min(wordsLast.length, wordsCur.length);
+                    for (let len = maxOverlap; len > 0; len--) {
+                        const tail = wordsLast.slice(wordsLast.length - len).map(w => w.toLowerCase()).join(' ');
+                        const head = wordsCur.slice(0, len).map(w => w.toLowerCase()).join(' ');
+                        if (tail === head) {
+                            finalPhrases[finalPhrases.length - 1] = wordsLast.concat(wordsCur.slice(len)).join(' ');
+                            merged = true;
+                            break;
+                        }
+                    }
+                    if (!merged) {
+                        finalPhrases.push(text);
+                    }
+                } else {
+                    finalPhrases.push(text);
+                }
+            } else {
+                // Interim result: always take latest active interim hypothesis (never concatenate multiple interim drafts!)
+                currentInterim = text;
+            }
+        }
+
+        let fullFinal = finalPhrases.join(' ').replace(/\s+/g, ' ').trim();
+        let rawText = fullFinal;
+
+        if (currentInterim) {
+            if (currentInterim.toLowerCase().startsWith(fullFinal.toLowerCase())) {
+                rawText = currentInterim;
+            } else {
+                const wordsFinal = fullFinal ? fullFinal.split(/\s+/) : [];
+                const wordsInterim = currentInterim.split(/\s+/);
+                let merged = false;
+                const maxOverlap = Math.min(wordsFinal.length, wordsInterim.length);
+                for (let len = maxOverlap; len > 0; len--) {
+                    const tail = wordsFinal.slice(wordsFinal.length - len).map(w => w.toLowerCase()).join(' ');
+                    const head = wordsInterim.slice(0, len).map(w => w.toLowerCase()).join(' ');
+                    if (tail === head) {
+                        rawText = wordsFinal.concat(wordsInterim.slice(len)).join(' ');
+                        merged = true;
+                        break;
+                    }
+                }
+                if (!merged) {
+                    rawText = fullFinal ? `${fullFinal} ${currentInterim}` : currentInterim;
+                }
+            }
+        }
+
+        return {
+            rawText: rawText.replace(/\s+/g, ' ').trim(),
+            hasFinalResult: hasFinalResult
+        };
+    }
+
     speechRecognitionObj.onresult = (event) => {
         if (isVoiceSending || voiceState === 'speaking' || voiceState === 'greeting' || voiceState === 'off' || voiceState === 'thinking') return;
 
-        let transcript = '';
-        let isFinal = false;
-
-        // Accumulate full transcript across all results so user sentences are never truncated mid-speech
-        for (let i = 0; i < event.results.length; ++i) {
-            transcript += event.results[i][0].transcript;
-            if (event.results[i].isFinal) isFinal = true;
-        }
-
-        const rawText = transcript.trim();
+        const parsed = parseSpeechResults(event.results);
+        const rawText = parsed.rawText;
+        const hasFinalResult = parsed.hasFinalResult;
         if (!rawText) return;
 
         // Punctuation-resilient wake word regex (supports "Hey, Strike.", "Hello, Strike!", "Hi strike", "Okay Strike", "Hey Pocket Strike", "Strike,")
@@ -1881,7 +1955,10 @@ function initVoiceAssistant() {
 
             if (cleanCommand.length === 0) {
                 // Standalone Wake Word: "Hey Strike" / "Hello Strike"
-                if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
+                if (speechSilenceTimer) {
+                    clearTimeout(speechSilenceTimer);
+                    speechSilenceTimer = null;
+                }
                 try { speechRecognitionObj.abort(); } catch (e) {}
                 playWakeChime();
                 speakTextResponse("Hello, how can I assist you?", true); // isGreeting = true
@@ -1894,8 +1971,8 @@ function initVoiceAssistant() {
                 autoGrowInput();
 
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
-                // Conversational silence delay: 1.7s on final phrase, 2.6s on interim phrase
-                const silenceDelay = isFinal ? 1700 : 2600;
+                // Conversational silence delay: 1.8s on final phrase, 2.6s on interim phrase
+                const silenceDelay = hasFinalResult ? 1800 : 2600;
                 speechSilenceTimer = setTimeout(() => {
                     submitVoicePrompt();
                 }, silenceDelay);
@@ -1913,8 +1990,8 @@ function initVoiceAssistant() {
 
                 if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
 
-                // Conversational silence delay: 1.7s on final phrase, 2.6s on interim phrase
-                const silenceDelay = isFinal ? 1700 : 2600;
+                // Conversational silence delay: 1.8s on final phrase, 2.6s on interim phrase
+                const silenceDelay = hasFinalResult ? 1800 : 2600;
                 speechSilenceTimer = setTimeout(() => {
                     submitVoicePrompt();
                 }, silenceDelay);
@@ -1930,12 +2007,14 @@ function initVoiceAssistant() {
     };
 
     speechRecognitionObj.onend = () => {
-        // Auto restart recognition loop to ensure it's "always working"
+        // Auto restart recognition loop if voice assistant is active and not busy
         if (voiceState === 'background' || voiceState === 'activated') {
-            if (!isGenerating && !isVoiceSending) {
+            if (!isGenerating && !isVoiceSending && !speechSilenceTimer) {
                 setTimeout(() => {
-                    try { speechRecognitionObj.start(); } catch (e) {}
-                }, 200);
+                    if (voiceState === 'background' || voiceState === 'activated') {
+                        try { speechRecognitionObj.start(); } catch (e) {}
+                    }
+                }, 250);
             }
         }
     };
@@ -1968,6 +2047,12 @@ function startVoiceListening() {
     if (!speechRecognitionObj) return;
     try {
         voiceState = 'activated';
+        if (speechSilenceTimer) {
+            clearTimeout(speechSilenceTimer);
+            speechSilenceTimer = null;
+        }
+        chatInput.value = '';
+        autoGrowInput();
         playWakeChime();
         speechRecognitionObj.start();
         
