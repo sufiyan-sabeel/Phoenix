@@ -80,14 +80,14 @@ function initEventListeners() {
             const isMobile = window.innerWidth <= 768;
             if (!isMobile) {
                 e.preventDefault();
-                handleSend();
+                handleSend(false);
             }
         }
         setTimeout(autoGrowInput, 0);
     });
 
     // Send Button Click
-    sendBtn.addEventListener('click', handleSend);
+    sendBtn.addEventListener('click', () => handleSend(false));
 
     // File Upload Handler
     if (attachBtn && fileInput) {
@@ -350,6 +350,27 @@ async function fetchBackendStatus() {
     }
 }
 
+// Helper to strip any legacy voice context leak from text
+function cleanVoiceContext(content) {
+    if (typeof content !== 'string') return content;
+    let res = content.replace(/\s*\(Context:\s*User is speaking to you in Voice Mode[\s\S]*/gi, '');
+    res = res.replace(/\s*\.?\s*Do not use markdown syntax, asterisks, bullet points, or code blocks unless explicitly requested\.\)?/gi, '');
+    return res.trim();
+}
+
+function sanitizeAllConversations(convList) {
+    if (!Array.isArray(convList)) return;
+    convList.forEach(chat => {
+        if (chat && Array.isArray(chat.messages)) {
+            chat.messages.forEach(m => {
+                if (m && m.role === 'user' && typeof m.content === 'string') {
+                    m.content = cleanVoiceContext(m.content);
+                }
+            });
+        }
+    });
+}
+
 // Load conversations from LocalStorage and sync with server
 async function loadConversations() {
     // 1. Initial load from LocalStorage for instant UI render
@@ -357,6 +378,7 @@ async function loadConversations() {
     if (saved) {
         try {
             conversations = JSON.parse(saved);
+            sanitizeAllConversations(conversations);
             const savedActiveId = localStorage.getItem('pocketstrike_active_id');
             if (savedActiveId && conversations.some(c => c.id === savedActiveId)) {
                 activeConversationId = savedActiveId;
@@ -376,6 +398,7 @@ async function loadConversations() {
             const serverConversations = await response.json();
             if (serverConversations && serverConversations.length > 0) {
                 conversations = serverConversations;
+                sanitizeAllConversations(conversations);
                 
                 // Set active conversation if not set or invalid
                 const savedActiveId = localStorage.getItem('pocketstrike_active_id');
@@ -481,6 +504,7 @@ function fillPrompt(promptText) {
 
 // Handle sending message
 async function handleSend(isVoice = false) {
+    const isVoiceMode = (isVoice === true);
     if (isGenerating) {
         handleStop();
         return;
@@ -505,8 +529,8 @@ async function handleSend(isVoice = false) {
         activeChat.title = text.length > 25 ? text.substring(0, 25) + '...' : text;
     }
 
-    // Append User Message
-    activeChat.messages.push({ role: 'user', content: text });
+    // Append User Message (strictly clean user prompt)
+    activeChat.messages.push({ role: 'user', content: cleanVoiceContext(text) });
     saveConversations();
     renderAll();
     scrollToBottom();
@@ -523,7 +547,7 @@ async function handleSend(isVoice = false) {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: activeChat.messages, is_voice: isVoice }),
+            body: JSON.stringify({ messages: activeChat.messages, is_voice: isVoiceMode }),
             signal: activeAbortController.signal
         });
 
@@ -558,7 +582,14 @@ async function handleSend(isVoice = false) {
                         streamedText = streamedText.substring(0, syncIndex);
                         try {
                             const updatedMessages = JSON.parse(syncData);
-                            activeChat.messages = updatedMessages;
+                            if (Array.isArray(updatedMessages)) {
+                                updatedMessages.forEach(m => {
+                                    if (m && m.role === 'user' && typeof m.content === 'string') {
+                                        m.content = cleanVoiceContext(m.content);
+                                    }
+                                });
+                                activeChat.messages = updatedMessages;
+                            }
                         } catch (err) {
                             console.error("Failed to parse history sync:", err);
                         }
@@ -589,7 +620,7 @@ async function handleSend(isVoice = false) {
         saveConversations();
         renderAll();
         scrollToBottom();
-        if (typeof voiceState !== 'undefined' && voiceState !== 'off') {
+        if (isVoiceMode && typeof voiceState !== 'undefined' && voiceState !== 'off') {
             const lastAssistantMsg = (activeChat && activeChat.messages) ? activeChat.messages.filter(m => m.role === 'assistant').pop() : null;
             let textToSpeak = "";
             if (lastAssistantMsg && lastAssistantMsg.content && typeof lastAssistantMsg.content === 'string' && lastAssistantMsg.content.trim()) {
@@ -879,7 +910,8 @@ function renderMessages() {
             ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`
             : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>`;
 
-        const renderedContent = isUser ? escapeHtml(msg.content) : parseMarkdown(msg.content);
+        const displayContent = isUser ? cleanVoiceContext(msg.content) : msg.content;
+        const renderedContent = isUser ? escapeHtml(displayContent) : parseMarkdown(displayContent);
 
         msgDiv.innerHTML = `
             <div class="message-avatar">

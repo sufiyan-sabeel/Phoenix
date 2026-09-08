@@ -5512,18 +5512,21 @@ def call_ai_api_stream(messages):
     except Exception as e:
         yield f"Stream Request Error: {str(e)}"
 
-def get_ai_response_stream(messages):
+def get_ai_response_stream(messages, is_voice=False):
     # Keep the full history in the web browser, but send only a rolling window of the last 60 messages to the API
     if len(messages) > 60:
         messages = [messages[0]] + messages[-59:]
         
     system_index = -1
     for idx, msg in enumerate(messages):
-        if msg["role"] == "system":
+        if msg.get("role") == "system":
             system_index = idx
             break
             
     full_prompt = get_system_prompt()
+    if is_voice is True:
+        full_prompt += "\n\nCRITICAL VOICE MODE INSTRUCTION: The user is speaking to you in Voice Assistant Mode. Keep your answer conversational, direct, natural, and concise (1 to 3 sentences maximum). Do NOT use markdown syntax, headers, asterisks, bullet points, tables, or code blocks unless explicitly requested, as your response will be read aloud via text-to-speech."
+
     if system_index >= 0:
         messages[system_index]["content"] = full_prompt
     else:
@@ -5547,7 +5550,8 @@ def get_ai_response_stream(messages):
         match = re.search(r'\[TOOL_CALL:\s*(\w+)\(([\s\S]*?)\)\s*\]', accumulated_response)
         if not match:
             messages.append({"role": "assistant", "content": accumulated_response})
-            yield f"\n[HISTORY_SYNC]:{json.dumps(messages)}"
+            sync_messages = [m for m in messages if m.get("role") != "system"]
+            yield f"\n[HISTORY_SYNC]:{json.dumps(sync_messages)}"
             return
             
         tool_name = match.group(1)
@@ -5572,7 +5576,8 @@ def get_ai_response_stream(messages):
     fallback = "Error: Tool execution loop limit reached."
     yield fallback
     messages.append({"role": "assistant", "content": fallback})
-    yield f"\n[HISTORY_SYNC]:{json.dumps(messages)}"
+    sync_messages = [m for m in messages if m.get("role") != "system"]
+    yield f"\n[HISTORY_SYNC]:{json.dumps(sync_messages)}"
 
 # Call selected AI provider
 def call_ai_api(messages):
@@ -6719,33 +6724,34 @@ def home():
 def chat():
     data = request.json or {}
     messages = data.get("messages", [])
-    is_voice = data.get("is_voice", False)
+    # Strictly require boolean True so that event objects serialized as truthy dicts are ignored
+    is_voice = (data.get("is_voice") is True)
     if not messages:
         return jsonify({"error": "No messages provided"}), 400
         
+    # Sanitize user messages to remove any legacy voice context leak
+    for msg in messages:
+        if isinstance(msg, dict) and msg.get("role") == "user" and isinstance(msg.get("content"), str):
+            c = re.sub(r'\s*\(Context:\s*User is speaking to you in Voice Mode[\s\S]*', '', msg["content"])
+            c = re.sub(r'\s*\.?\s*Do not use markdown syntax, asterisks, bullet points, or code blocks unless explicitly requested\.\)?', '', c)
+            msg["content"] = c.strip()
+
     save_unified_history(messages)
 
-    stream_messages = messages
-    if is_voice and stream_messages:
-        # Clone messages to inject concise voice persona guidance without polluting persistent history
-        stream_messages = [dict(m) for m in messages]
-        last_msg = stream_messages[-1]
-        if last_msg.get("role") == "user":
-            last_msg = dict(last_msg)
-            last_msg["content"] = last_msg["content"] + "\n\n(Context: User is speaking to you in Voice Mode. Keep your answer conversational, direct, and concise (1-3 sentences). Do not use markdown syntax, asterisks, bullet points, or code blocks unless explicitly requested.)"
-            stream_messages[-1] = last_msg
+    stream_messages = [dict(m) for m in messages]
     
     def generate():
         streamed_text = ""
-        for chunk in get_ai_response_stream(stream_messages):
+        for chunk in get_ai_response_stream(stream_messages, is_voice=is_voice):
             streamed_text += chunk
             yield chunk
-        if streamed_text:
-            messages.append({"role": "assistant", "content": streamed_text})
-            save_unified_history(messages)
+        clean_text = streamed_text.split('\n[HISTORY_SYNC]:')[0].strip()
+        if clean_text:
+            final_history = [m for m in stream_messages if m.get("role") != "system"]
+            save_unified_history(final_history)
             # Trigger background memory evolution thread
             import threading
-            threading.Thread(target=auto_evolve_memory_background, args=(messages.copy(),), daemon=True).start()
+            threading.Thread(target=auto_evolve_memory_background, args=(final_history.copy(),), daemon=True).start()
 
     return Response(generate(), mimetype='text/event-stream')
 
