@@ -3,11 +3,13 @@
 # PocketstrikeAI Installer Script for macOS (Homebrew)
 # Designed to set up macOS system dependencies and Python environments.
 
-# Exit immediately if a command exits with a non-zero status
-set -e
-
 # Ensure standard macOS and Homebrew binary paths are available
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$PATH"
+if [ -x "/opt/homebrew/bin/brew" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)" || true
+elif [ -x "/usr/local/bin/brew" ]; then
+    eval "$(/usr/local/bin/brew shellenv 2>/dev/null)" || true
+fi
 
 # Resolve project root directory safely across bash, zsh, and sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
@@ -42,56 +44,88 @@ if [ ! -x "$(command -v brew)" ]; then
         echo -e "${RED}Error: Failed to install Homebrew automatically. Please install Homebrew manually from https://brew.sh${NC}"
         exit 1
     }
+    if [ -x "/opt/homebrew/bin/brew" ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)" || true
+    elif [ -x "/usr/local/bin/brew" ]; then
+        eval "$(/usr/local/bin/brew shellenv 2>/dev/null)" || true
+    fi
 fi
 
 # 2. Update Homebrew formulae
-echo -e "${BLUE}⚡ [1/4] Updating Homebrew repository mirrors...${NC}"
-brew update || echo -e "${YELLOW}Warning: brew update encountered minor warnings, proceeding...${NC}"
+echo -e "${BLUE}⚡ [1/4] Checking Homebrew formulae...${NC}"
+brew update || echo -e "${YELLOW}Warning: brew update encountered minor network warnings, proceeding...${NC}"
 
 # 3. Install required CLI tools via brew
 echo -e "\n${BLUE}⚡ [2/4] Deploying macOS security toolchain & dependencies...${NC}"
-brew install python3 git nmap curl || echo -e "${YELLOW}Warning: Some brew packages were already installed.${NC}"
+brew install python3 git nmap || echo -e "${YELLOW}Warning: brew packages are up-to-date or already installed.${NC}"
 
 # Create workspace directory
 echo -e "\n${BLUE}📁 Initializing macOS workspace directory (~/PocketStrike-AI/workspace)...${NC}"
-mkdir -p ~/PocketStrike-AI/workspace || mkdir -p ./workspace
+mkdir -p "$PROJECT_ROOT/workspace" || true
+mkdir -p "$HOME/PocketStrike-AI/workspace" 2>/dev/null || true
 
 # 4. Install Python dependencies
 echo -e "\n${BLUE}⚡ [3/4] Installing Python dependency layers...${NC}"
 
 # Find Python 3 binary on macOS
-PYTHON_CMD="python3"
-if ! command -v python3 &>/dev/null; then
-    if command -v python &>/dev/null; then
-        PYTHON_CMD="python"
-    else
-        echo -e "${RED}Error: Python 3 executable not found after Homebrew install.${NC}"
-        exit 1
+PYTHON_CMD=""
+for p in "$(/usr/bin/which python3 2>/dev/null)" "/opt/homebrew/bin/python3" "/usr/local/bin/python3" "$(/usr/bin/which python 2>/dev/null)"; do
+    if [ -n "$p" ] && [ -x "$p" ]; then
+        PYTHON_CMD="$p"
+        break
     fi
+done
+
+if [ -z "$PYTHON_CMD" ]; then
+    PYTHON_CMD="python3"
 fi
 
-# Ensure pip module is available
-$PYTHON_CMD -m ensurepip --upgrade 2>/dev/null || true
+echo -e "Using Python interpreter: ${CYAN}${PYTHON_CMD}${NC}"
 
-# Install Python packages using python3 -m pip with Homebrew PEP 668 compatibility
-$PYTHON_CMD -m pip install --upgrade pip 2>/dev/null || true
-$PYTHON_CMD -m pip install --break-system-packages flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || \
-$PYTHON_CMD -m pip install flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || \
-pip3 install --break-system-packages flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || \
-pip3 install flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || {
-    echo -e "${YELLOW}Notice: Using isolated virtualenv for macOS Python packages...${NC}"
-    $PYTHON_CMD -m venv ~/PocketStrike-AI/.venv 2>/dev/null || $PYTHON_CMD -m venv ./.venv
-    source ~/PocketStrike-AI/.venv/bin/activate 2>/dev/null || source ./.venv/bin/activate 2>/dev/null || true
-    pip install flask requests SpeechRecognition opencv-python urllib3
+# Deploy dedicated virtual environment in $PROJECT_ROOT/.venv
+VENV_DIR="$PROJECT_ROOT/.venv"
+echo -e "${BLUE}Configuring isolated Python virtual environment at ${CYAN}$VENV_DIR${NC}...${NC}"
+
+if [ ! -d "$VENV_DIR" ] || [ ! -f "$VENV_DIR/bin/python" ]; then
+    rm -rf "$VENV_DIR" 2>/dev/null || true
+    $PYTHON_CMD -m venv "$VENV_DIR" || python3 -m venv "$VENV_DIR" || true
+fi
+
+# Determine pip and python binaries
+if [ -f "$VENV_DIR/bin/pip" ]; then
+    PIP_EXEC="$VENV_DIR/bin/pip"
+    PY_EXEC="$VENV_DIR/bin/python"
+else
+    PIP_EXEC="$PYTHON_CMD -m pip"
+    PY_EXEC="$PYTHON_CMD"
+fi
+
+# Upgrade pip inside environment
+$PY_EXEC -m ensurepip --upgrade 2>/dev/null || true
+$PIP_EXEC install --upgrade pip 2>/dev/null || true
+
+# Install core required packages
+echo -e "${BLUE}Installing required packages: flask, requests, SpeechRecognition, urllib3...${NC}"
+$PIP_EXEC install flask requests SpeechRecognition urllib3 || \
+$PY_EXEC -m pip install --break-system-packages flask requests SpeechRecognition urllib3 || \
+$PY_EXEC -m pip install flask requests SpeechRecognition urllib3 || {
+    echo -e "${YELLOW}Retrying package installation with isolated flags...${NC}"
+    $PIP_EXEC install --no-cache-dir flask requests SpeechRecognition urllib3
 }
+
+# Install optional packages (opencv-python) without aborting on Apple Silicon compile issues
+echo -e "${BLUE}Installing optional packages (opencv-python)...${NC}"
+$PIP_EXEC install opencv-python 2>/dev/null || \
+$PY_EXEC -m pip install --break-system-packages opencv-python 2>/dev/null || \
+echo -e "${YELLOW}Notice: opencv-python is optional and was skipped.${NC}"
 
 # 5. Set execution permissions
 echo -e "\n${BLUE}⚡ [4/4] Setting execution system permissions...${NC}"
-chmod +x mac/launch.sh 2>/dev/null || true
-chmod +x mac/install.sh 2>/dev/null || true
-chmod +x launch.sh 2>/dev/null || true
-chmod +x install.sh 2>/dev/null || true
-chmod +x setup.py 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/mac/launch.sh" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/mac/install.sh" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/launch.sh" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/install.sh" 2>/dev/null || true
+chmod +x "$PROJECT_ROOT/setup.py" 2>/dev/null || true
 
 echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "       ✨ ${BLUE}Pocket${GREEN}Strike-AI ${NC}— ${GREEN}macOS Deployment Complete!${NC} ✨"

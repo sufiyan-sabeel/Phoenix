@@ -4,7 +4,12 @@
 # Shows a terminal dashboard menu to configure or start the server on macOS.
 
 # Ensure standard macOS and Homebrew binary paths are available
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$PATH"
+if [ -x "/opt/homebrew/bin/brew" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)" || true
+elif [ -x "/usr/local/bin/brew" ]; then
+    eval "$(/usr/local/bin/brew shellenv 2>/dev/null)" || true
+fi
 
 # Resolve project root directory safely across bash, zsh, and sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
@@ -12,10 +17,10 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || exit 1
 
 # Auto-activate macOS virtual environment if initialized
-if [ -d "$HOME/PocketStrike-AI/.venv" ]; then
-    source "$HOME/PocketStrike-AI/.venv/bin/activate" 2>/dev/null || true
-elif [ -d "$PROJECT_ROOT/.venv" ]; then
+if [ -d "$PROJECT_ROOT/.venv" ]; then
     source "$PROJECT_ROOT/.venv/bin/activate" 2>/dev/null || true
+elif [ -d "$HOME/PocketStrike-AI/.venv" ]; then
+    source "$HOME/PocketStrike-AI/.venv/bin/activate" 2>/dev/null || true
 fi
 
 # Colors (UI-Matching Cyber Theme)

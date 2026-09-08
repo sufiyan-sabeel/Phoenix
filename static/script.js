@@ -516,6 +516,8 @@ async function handleSend() {
     toggleSendButton();
     renderTypingIndicator();
 
+    let streamedText = "";
+
     try {
         activeAbortController = new AbortController();
         const response = await fetch('/api/chat', {
@@ -531,7 +533,6 @@ async function handleSend() {
             const reader = response.body.getReader();
             const decoder = new TextDecoder("utf-8");
             let done = false;
-            let streamedText = "";
             
             // Add placeholder for assistant message
             const assistantMessageIndex = activeChat.messages.length;
@@ -589,10 +590,21 @@ async function handleSend() {
         renderAll();
         scrollToBottom();
         if (typeof voiceState !== 'undefined' && voiceState !== 'off') {
-            const lastAssistantMsg = activeChat.messages.filter(m => m.role === 'assistant').pop();
-            const textToSpeak = (lastAssistantMsg && lastAssistantMsg.content) ? lastAssistantMsg.content : streamedText;
+            const lastAssistantMsg = (activeChat && activeChat.messages) ? activeChat.messages.filter(m => m.role === 'assistant').pop() : null;
+            let textToSpeak = "";
+            if (lastAssistantMsg && lastAssistantMsg.content && typeof lastAssistantMsg.content === 'string' && lastAssistantMsg.content.trim()) {
+                textToSpeak = lastAssistantMsg.content.trim();
+            } else if (streamedText && streamedText.trim()) {
+                textToSpeak = streamedText.trim();
+            }
             if (textToSpeak) {
                 speakTextResponse(textToSpeak);
+            } else {
+                voiceState = 'activated';
+                setVoiceHudState('listening', 'I am listening...');
+                if (speechRecognitionObj) {
+                    try { speechRecognitionObj.start(); } catch (e) {}
+                }
             }
         }
     }
@@ -1493,88 +1505,131 @@ function stopVoiceSpeaking() {
     }
 }
 
-// Speak AI Response with Anti-Echo Microphone Muting
-function speakTextResponse(text, isGreeting = false) {
-    if (!('speechSynthesis' in window)) return;
-    try {
-        window.speechSynthesis.cancel();
-        const spokenText = cleanTextForSpeech(text);
-        if (!spokenText) return;
-
-        voiceState = isGreeting ? 'greeting' : 'speaking';
-
-        if (speechRecognitionObj) {
-            try { speechRecognitionObj.abort(); } catch (e) {}
-        }
-
-        setVoiceHudState('speaking', spokenText);
-
-        const floatingBtn = document.getElementById('voiceFloatingStopBtn');
-        if (floatingBtn) floatingBtn.style.display = 'inline-flex';
-
-        const headerVoiceBtn = document.getElementById('voiceBtn');
-        if (headerVoiceBtn) headerVoiceBtn.classList.add('voice-speaking');
-
-        const utterance = new SpeechSynthesisUtterance(spokenText);
-        currentSpeechUtterance = utterance;
-        utterance.rate = 1.05;
-        utterance.pitch = 1.0;
-
-        const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Samantha')));
-        if (preferredVoice) utterance.voice = preferredVoice;
-
-        const onSpeechFinish = () => {
-            if (currentSpeechUtterance !== utterance) return;
-            currentSpeechUtterance = null;
-
-            if (floatingBtn) floatingBtn.style.display = 'none';
-            if (headerVoiceBtn) headerVoiceBtn.classList.remove('voice-speaking');
-
-            const stopBtn = document.getElementById('voiceHudStopBtn');
-            if (stopBtn) stopBtn.style.display = 'none';
-            const pauseBtn = document.getElementById('voiceHudPauseBtn');
-            if (pauseBtn) pauseBtn.style.display = 'none';
-
-            if (isGreeting) {
-                // After saying "Hello, how can I assist you?", go straight to activated listening mode
-                voiceState = 'activated';
-                setVoiceHudState('listening', 'I am listening...');
-                setTimeout(() => {
-                    if (voiceState === 'activated' && speechRecognitionObj) {
-                        try { speechRecognitionObj.start(); } catch (e) {}
-                    }
-                }, 150);
-            } else {
-                // Return to active conversational listening (like ChatGPT/Gemini)
-                voiceState = 'activated';
-                setVoiceHudState('listening', 'I am listening...');
-                setTimeout(() => {
-                    if (voiceState === 'activated' && !isGenerating && !isVoiceSending && speechRecognitionObj) {
-                        try { speechRecognitionObj.start(); } catch (e) {}
-                    }
-                }, 350);
-            }
-        };
-
-        utterance.onend = onSpeechFinish;
-        utterance.onerror = (e) => {
-            if (e.error !== 'canceled') {
-                onSpeechFinish();
-            }
-        };
-
-        window.speechSynthesis.speak(utterance);
-    } catch (e) {
-        console.error("Speech Synthesis error:", e);
-        const floatingBtn = document.getElementById('voiceFloatingStopBtn');
-        if (floatingBtn) floatingBtn.style.display = 'none';
-        const stopBtn = document.getElementById('voiceHudStopBtn');
-        if (stopBtn) stopBtn.style.display = 'none';
-        voiceState = 'activated';
-        setVoiceHudState('listening', 'I am listening...');
+// Prime speech synthesis on user interaction to unlock mobile audio autoplay policy
+function primeSpeechSynthesis() {
+    if ('speechSynthesis' in window) {
+        try {
+            window.speechSynthesis.resume();
+            const prime = new SpeechSynthesisUtterance(' ');
+            prime.volume = 0.01;
+            window.speechSynthesis.speak(prime);
+        } catch (e) {}
     }
 }
+
+// Speak AI Response with Anti-Echo Microphone Muting & Multi-Device Fallback (Android/Termux, Mac, Win, Linux)
+function speakTextResponse(text, isGreeting = false) {
+    const spokenText = cleanTextForSpeech(text);
+    if (!spokenText) {
+        voiceState = 'activated';
+        setVoiceHudState('listening', 'I am listening...');
+        if (speechRecognitionObj) {
+            try { speechRecognitionObj.start(); } catch (e) {}
+        }
+        return;
+    }
+
+    voiceState = isGreeting ? 'greeting' : 'speaking';
+
+    if (speechRecognitionObj) {
+        try { speechRecognitionObj.abort(); } catch (e) {}
+    }
+
+    setVoiceHudState('speaking', spokenText);
+
+    const floatingBtn = document.getElementById('voiceFloatingStopBtn');
+    if (floatingBtn) floatingBtn.style.display = 'inline-flex';
+
+    const headerVoiceBtn = document.getElementById('voiceBtn');
+    if (headerVoiceBtn) headerVoiceBtn.classList.add('voice-speaking');
+
+    let speechFinished = false;
+    let fallbackTimer = null;
+
+    const onSpeechFinish = () => {
+        if (speechFinished) return;
+        speechFinished = true;
+        currentSpeechUtterance = null;
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+
+        if (floatingBtn) floatingBtn.style.display = 'none';
+        if (headerVoiceBtn) headerVoiceBtn.classList.remove('voice-speaking');
+
+        const stopBtn = document.getElementById('voiceHudStopBtn');
+        if (stopBtn) stopBtn.style.display = 'none';
+        const pauseBtn = document.getElementById('voiceHudPauseBtn');
+        if (pauseBtn) pauseBtn.style.display = 'none';
+
+        if (isGreeting) {
+            // After saying "Hello, how can I assist you?", transition straight to listening
+            voiceState = 'activated';
+            setVoiceHudState('listening', 'I am listening...');
+            setTimeout(() => {
+                if (voiceState === 'activated' && speechRecognitionObj) {
+                    try { speechRecognitionObj.start(); } catch (e) {}
+                }
+            }, 150);
+        } else {
+            // Return to active conversational listening
+            voiceState = 'activated';
+            setVoiceHudState('listening', 'I am listening...');
+            setTimeout(() => {
+                if (voiceState === 'activated' && !isGenerating && !isVoiceSending && speechRecognitionObj) {
+                    try { speechRecognitionObj.start(); } catch (e) {}
+                }
+            }, 350);
+        }
+    };
+
+    // Android Chrome & mobile stall safety timer: guarantees HUD never gets stuck in speaking
+    const wordCount = spokenText.split(/\s+/).length;
+    const estimatedDuration = Math.max(3000, (wordCount / 2.2) * 1000 + 3500);
+    fallbackTimer = setTimeout(onSpeechFinish, estimatedDuration);
+
+    // 1. Try Browser Speech Synthesis
+    if ('speechSynthesis' in window) {
+        try {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.resume();
+
+            const utterance = new SpeechSynthesisUtterance(spokenText);
+            currentSpeechUtterance = utterance;
+            utterance.rate = 1.02;
+            utterance.pitch = 1.0;
+            utterance.lang = 'en-US';
+
+            const voices = window.speechSynthesis.getVoices();
+            if (voices && voices.length > 0) {
+                const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Samantha')));
+                if (preferredVoice) utterance.voice = preferredVoice;
+            }
+
+            utterance.onend = onSpeechFinish;
+            utterance.onerror = (e) => {
+                if (e.error !== 'canceled') {
+                    // Fallback to server host TTS on Android Termux / Mac / Linux / Windows
+                    fetch('/api/voice/speak', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: spokenText })
+                    }).catch(() => {});
+                    onSpeechFinish();
+                }
+            };
+
+            window.speechSynthesis.speak(utterance);
+            return;
+        } catch (e) {
+            console.error("Speech Synthesis error:", e);
+        }
+    }
+
+    // 2. Server Host TTS Fallback (Termux-TTS on Android, macOS 'say', Windows SAPI)
+    fetch('/api/voice/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: spokenText })
+    }).catch(() => {});
 
 function initVoiceAssistant() {
     const headerVoiceBtn = document.getElementById('voiceBtn');
@@ -1628,6 +1683,7 @@ function initVoiceAssistant() {
     speechRecognitionObj.lang = 'en-US';
 
     const toggleVoice = () => {
+        primeSpeechSynthesis();
         if (voiceState === 'speaking' || voiceState === 'greeting') {
             stopVoiceSpeaking();
             return;
@@ -1747,6 +1803,7 @@ function submitVoicePrompt() {
 }
 
 function startVoiceListening() {
+    primeSpeechSynthesis();
     if (!speechRecognitionObj) return;
     try {
         voiceState = 'activated';

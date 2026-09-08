@@ -6843,6 +6843,16 @@ def trigger_voice():
             return jsonify({"error": str(e)}), 500
         return jsonify({"status": "Voice trigger armed"})
 
+@app.route('/api/voice/speak', methods=['POST'])
+def api_speak_voice():
+    """Endpoint for speaking text through host TTS engines (termux-tts-speak / say / SAPI / spd-say)."""
+    data = request.json or {}
+    text = data.get("text", "")
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+    res = speak_text(text)
+    return jsonify({"status": "success", "result": res})
+
 @app.route('/api/voice/stop', methods=['POST', 'GET'])
 def stop_voice():
     """Immediately stops active voice speech audio across devices and platforms."""

@@ -6,6 +6,24 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# Auto-detect macOS (Darwin) and delegate to mac/install.sh
+if [[ "$OSTYPE" == "darwin"* ]] || [ "$(uname -s 2>/dev/null)" = "Darwin" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+    if [ -f "$SCRIPT_DIR/mac/install.sh" ]; then
+        chmod +x "$SCRIPT_DIR/mac/install.sh" 2>/dev/null || true
+        exec "$SCRIPT_DIR/mac/install.sh" "$@"
+    fi
+fi
+
+# Auto-detect Linux (Debian/Ubuntu/Arch/Fedora/Kali) when not running in Termux
+if [ ! -x "$(command -v pkg)" ] && { [ -f "/etc/os-release" ] || [ -f "/etc/debian_version" ]; }; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+    if [ -f "$SCRIPT_DIR/linux/install.sh" ]; then
+        chmod +x "$SCRIPT_DIR/linux/install.sh" 2>/dev/null || true
+        exec "$SCRIPT_DIR/linux/install.sh" "$@"
+    fi
+fi
+
 # Define colors for output
 BLUE='\033[38;5;39m' # Vibrant Cyber Blue
 GREEN='\033[38;5;46m' # Bright Green
