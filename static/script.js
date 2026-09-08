@@ -480,7 +480,7 @@ function fillPrompt(promptText) {
 }
 
 // Handle sending message
-async function handleSend() {
+async function handleSend(isVoice = false) {
     if (isGenerating) {
         handleStop();
         return;
@@ -523,7 +523,7 @@ async function handleSend() {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: activeChat.messages }),
+            body: JSON.stringify({ messages: activeChat.messages, is_voice: isVoice }),
             signal: activeAbortController.signal
         });
 
@@ -1382,7 +1382,7 @@ function playDoneChime() {
     } catch (e) {}
 }
 
-// Clean speech text so TTS speaks only natural human conversational responses
+// Clean speech text so TTS speaks only natural human conversational responses (Google Assistant style)
 function cleanTextForSpeech(text) {
     if (!text) return "";
     let clean = String(text)
@@ -1397,8 +1397,24 @@ function cleanTextForSpeech(text) {
         .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
         .replace(/\s+/g, ' ')
         .trim();
+
     if (!clean || clean.length < 2) {
-        clean = "I'm on it.";
+        return "I'm on it.";
+    }
+
+    // Google Assistant Style: Keep voice speech concise (first 2-3 sentences or ~50 words)
+    // Avoids endless TTS monologues while the full text remains in the chat bubble
+    const sentences = clean.match(/[^.!?]+[.!?]+(\s|$)/g);
+    if (sentences && sentences.length > 3) {
+        clean = sentences.slice(0, 3).join('').trim();
+    } else if (clean.length > 280) {
+        const cut = clean.substring(0, 280);
+        const lastPeriod = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+        if (lastPeriod > 80) {
+            clean = clean.substring(0, lastPeriod + 1).trim();
+        } else {
+            clean = cut.trim() + '...';
+        }
     }
     return clean;
 }
@@ -1442,7 +1458,7 @@ function setVoiceHudState(state, text = '') {
     } else if (state === 'listening') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Listening";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Speak your command...';
-        if (voiceHudTip) voiceHudTip.textContent = 'Listening • Say command or tap ✕ to close';
+        if (voiceHudTip) voiceHudTip.textContent = 'Listening • Speak or tap anywhere to cancel';
         if (pauseBtn) pauseBtn.style.display = 'none';
         if (stopBtn) stopBtn.style.display = 'none';
         if (voiceHudPromptIcon) {
@@ -1451,7 +1467,7 @@ function setVoiceHudState(state, text = '') {
     } else if (state === 'thinking') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Thinking";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Processing command...';
-        if (voiceHudTip) voiceHudTip.textContent = 'Processing request...';
+        if (voiceHudTip) voiceHudTip.textContent = 'Thinking...';
         if (pauseBtn) pauseBtn.style.display = 'none';
         if (stopBtn) stopBtn.style.display = 'none';
         if (voiceHudPromptIcon) {
@@ -1460,7 +1476,7 @@ function setVoiceHudState(state, text = '') {
     } else if (state === 'speaking') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Speaking";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Responding...';
-        if (voiceHudTip) voiceHudTip.textContent = 'Speaking • Tap Stop to interrupt';
+        if (voiceHudTip) voiceHudTip.textContent = 'Speaking • Tap Stop or anywhere to interrupt';
         if (pauseBtn) pauseBtn.style.display = 'inline-flex';
         if (stopBtn) stopBtn.style.display = 'inline-flex';
         if (voiceHudPromptIcon) {
@@ -1470,15 +1486,21 @@ function setVoiceHudState(state, text = '') {
 }
 
 let currentSpeechUtterance = null;
+let isExplicitlyStopped = false;
 
 // Immediately Stop / Interrupt Active Voice Speech
 function stopVoiceSpeaking() {
+    isExplicitlyStopped = true;
     currentSpeechUtterance = null;
 
     if ('speechSynthesis' in window) {
-        try { window.speechSynthesis.cancel(); } catch (e) {}
+        try {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.pause();
+            window.speechSynthesis.cancel();
+        } catch (e) {}
     }
-    // Inform backend to abort any active host TTS processes (say / termux-tts / SAPI / espeak)
+    // Inform backend to immediately abort and flush any host TTS processes (Termux / Mac / Linux / Windows)
     fetch('/api/voice/stop', { method: 'POST' }).catch(() => {});
 
     const floatingBtn = document.getElementById('voiceFloatingStopBtn');
@@ -1496,8 +1518,9 @@ function stopVoiceSpeaking() {
     // Transition back to active listening state if HUD is on
     if (voiceState === 'speaking' || voiceState === 'greeting') {
         voiceState = 'activated';
-        setVoiceHudState('listening', 'Speech stopped. I am listening...');
+        setVoiceHudState('listening', 'Stopped. What can I help with?');
         setTimeout(() => {
+            isExplicitlyStopped = false;
             if (voiceState === 'activated' && !isGenerating && !isVoiceSending && speechRecognitionObj) {
                 try { speechRecognitionObj.start(); } catch (e) {}
             }
@@ -1519,6 +1542,7 @@ function primeSpeechSynthesis() {
 
 // Speak AI Response with Anti-Echo Microphone Muting & Multi-Device Fallback (Android/Termux, Mac, Win, Linux)
 function speakTextResponse(text, isGreeting = false) {
+    isExplicitlyStopped = false;
     const spokenText = cleanTextForSpeech(text);
     if (!spokenText) {
         voiceState = 'activated';
@@ -1606,15 +1630,17 @@ function speakTextResponse(text, isGreeting = false) {
 
             utterance.onend = onSpeechFinish;
             utterance.onerror = (e) => {
-                if (e.error !== 'canceled') {
-                    // Fallback to server host TTS on Android Termux / Mac / Linux / Windows
-                    fetch('/api/voice/speak', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: spokenText })
-                    }).catch(() => {});
+                if (isExplicitlyStopped || e.error === 'canceled' || e.error === 'interrupted') {
                     onSpeechFinish();
+                    return;
                 }
+                // Fallback to server host TTS on Android Termux / Mac / Linux / Windows
+                fetch('/api/voice/speak', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: spokenText })
+                }).catch(() => {});
+                onSpeechFinish();
             };
 
             window.speechSynthesis.speak(utterance);
@@ -1625,11 +1651,13 @@ function speakTextResponse(text, isGreeting = false) {
     }
 
     // 2. Server Host TTS Fallback (Termux-TTS on Android, macOS 'say', Windows SAPI)
-    fetch('/api/voice/speak', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: spokenText })
-    }).catch(() => {});
+    if (!isExplicitlyStopped) {
+        fetch('/api/voice/speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: spokenText })
+        }).catch(() => {});
+    }
 }
 
 function initVoiceAssistant() {
@@ -1641,11 +1669,26 @@ function initVoiceAssistant() {
     const voiceFloatingStopBtn = document.getElementById('voiceFloatingStopBtn');
     const voiceHudVisualizer = document.getElementById('voiceHudVisualizer');
 
-    // Dismiss voice assistant when clicking background blur overlay
+    // Dismiss or interrupt voice assistant when clicking background blur overlay
     const voiceBackdropBlur = document.getElementById('voiceBackdropBlur');
     if (voiceBackdropBlur) {
         voiceBackdropBlur.addEventListener('click', () => {
-            stopVoiceListening();
+            if (voiceState === 'speaking' || voiceState === 'greeting') {
+                stopVoiceSpeaking();
+            } else {
+                stopVoiceListening();
+            }
+        });
+    }
+
+    // Tapping anywhere on the HUD card during speech immediately stops/interrupts speech
+    const voiceHudContainer = document.querySelector('.voice-hud-container');
+    if (voiceHudContainer) {
+        voiceHudContainer.addEventListener('click', (e) => {
+            if (e.target.closest('#voiceHudClose')) return;
+            if (voiceState === 'speaking' || voiceState === 'greeting') {
+                stopVoiceSpeaking();
+            }
         });
     }
 
@@ -1795,7 +1838,7 @@ function submitVoicePrompt() {
         voiceState = 'thinking';
         setVoiceHudState('thinking', `"${promptToSend}"`);
 
-        handleSend();
+        handleSend(true);
 
         setTimeout(() => {
             isVoiceSending = false;

@@ -2624,6 +2624,18 @@ def speak_text(text):
         
         if not clean_text or len(clean_text) < 2:
             clean_text = "I'm on it."
+        else:
+            # Google Assistant style: keep spoken response concise (1-3 sentences, max ~280 chars)
+            sentences = re.findall(r'[^.!?]+[.!?]+(?:\s|$)', clean_text)
+            if sentences and len(sentences) > 3:
+                clean_text = "".join(sentences[:3]).strip()
+            elif len(clean_text) > 280:
+                cut = clean_text[:280]
+                last_period = max(cut.rfind('. '), cut.rfind('! '), cut.rfind('? '))
+                if last_period > 80:
+                    clean_text = cut[:last_period + 1].strip()
+                else:
+                    clean_text = cut.strip() + '...'
             
         # Immediately halt any previous speech before starting new speech
         stop_speech()
@@ -2686,7 +2698,10 @@ def stop_speech():
         # 1. Android Termux TTS
         if shutil.which("termux-tts-speak"):
             try:
-                subprocess.run(["pkill", "-f", "termux-tts-speak"], capture_output=True, timeout=2)
+                subprocess.run(["pkill", "-9", "-f", "termux-tts-speak"], capture_output=True, timeout=1)
+                # Flush Android TTS queue with empty text to immediately cut off active audio
+                subprocess.run(["termux-tts-speak", " "], capture_output=True, timeout=1)
+                subprocess.run(["pkill", "-9", "-f", "termux-tts-speak"], capture_output=True, timeout=1)
             except Exception:
                 pass
 
@@ -6690,14 +6705,25 @@ def home():
 def chat():
     data = request.json or {}
     messages = data.get("messages", [])
+    is_voice = data.get("is_voice", False)
     if not messages:
         return jsonify({"error": "No messages provided"}), 400
         
     save_unified_history(messages)
+
+    stream_messages = messages
+    if is_voice and stream_messages:
+        # Clone messages to inject concise voice persona guidance without polluting persistent history
+        stream_messages = [dict(m) for m in messages]
+        last_msg = stream_messages[-1]
+        if last_msg.get("role") == "user":
+            last_msg = dict(last_msg)
+            last_msg["content"] = last_msg["content"] + "\n\n(Context: User is speaking to you in Voice Mode. Keep your answer conversational, direct, and concise (1-3 sentences). Do not use markdown syntax, asterisks, bullet points, or code blocks unless explicitly requested.)"
+            stream_messages[-1] = last_msg
     
     def generate():
         streamed_text = ""
-        for chunk in get_ai_response_stream(messages):
+        for chunk in get_ai_response_stream(stream_messages):
             streamed_text += chunk
             yield chunk
         if streamed_text:
