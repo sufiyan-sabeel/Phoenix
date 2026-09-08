@@ -101,6 +101,10 @@
                     <span class="model-badge" id="headerModelBadge">Connecting...</span>
                 </div>
                 <div class="header-right-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="voice-floating-stop-btn" id="voiceFloatingStopBtn" style="display:none;" title="Stop Voice Assistant Speech">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg>
+                        <span>Stop Voice</span>
+                    </button>
                     <button class="voice-btn" id="voiceBtn" title="Voice Assistant Mode ('Hey Strike')">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -246,9 +250,15 @@
                     <span class="voice-hud-dot"></span>
                     <span class="voice-hud-status-text" id="voiceHudStatus">Listening...</span>
                 </div>
-                <button class="voice-hud-close-btn" id="voiceHudClose" title="Dismiss Voice Assistant">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
+                <div class="voice-hud-controls">
+                    <button class="voice-hud-stop-btn" id="voiceHudStopBtn" title="Stop Assistant Speaking" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg>
+                        <span>Stop</span>
+                    </button>
+                    <button class="voice-hud-close-btn" id="voiceHudClose" title="Dismiss Voice Assistant">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
             </div>
             <div class="voice-hud-middle">
                 <div class="voice-hud-transcript-box">
@@ -256,14 +266,16 @@
                 </div>
             </div>
             <div class="voice-hud-bottom">
-                <div class="voice-hud-visualizer" id="voiceHudVisualizer">
-                    <span class="voice-wave-bar bar-1"></span>
-                    <span class="voice-wave-bar bar-2"></span>
-                    <span class="voice-wave-bar bar-3"></span>
-                    <span class="voice-wave-bar bar-4"></span>
-                    <span class="voice-wave-bar bar-5"></span>
+                <div class="voice-hud-visualizer-row">
+                    <div class="voice-hud-visualizer" id="voiceHudVisualizer" title="Sound Waveform (Click to stop voice)">
+                        <span class="voice-wave-bar bar-1"></span>
+                        <span class="voice-wave-bar bar-2"></span>
+                        <span class="voice-wave-bar bar-3"></span>
+                        <span class="voice-wave-bar bar-4"></span>
+                        <span class="voice-wave-bar bar-5"></span>
+                    </div>
                 </div>
-                <span class="voice-hud-tip">Listening for "Hey Strike" • Tap screen to cancel</span>
+                <span class="voice-hud-tip" id="voiceHudTip">Listening for "Hey Strike" • Tap screen to cancel</span>
             </div>
         </div>
     </div>

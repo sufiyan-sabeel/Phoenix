@@ -2560,12 +2560,17 @@ def scan_wifi_networks():
     except Exception as e:
         return f"Error executing wifi scan: {str(e)} (Ensure Termux:API is installed)"
 
+_CURRENT_SPEECH_PROCESS = None
+_SPEECH_LOCK = threading.Lock()
+
 def speak_text(text):
+    global _CURRENT_SPEECH_PROCESS
     try:
         import subprocess
         import shutil
         import re
         import os
+        import sys
         
         # Clean text for speech output (strip tool markers, code fences, markdown, and emojis)
         clean_text = re.sub(r'\[TOOL_CALL:.*?\]', '', str(text))
@@ -2581,48 +2586,96 @@ def speak_text(text):
         if not clean_text or len(clean_text) < 2:
             clean_text = "I'm on it."
             
-        # 1. Android Termux TTS
-        if shutil.which("termux-tts-speak"):
-            res = subprocess.run(["termux-tts-speak", clean_text], capture_output=True, text=True, timeout=10)
-            if res.returncode == 0:
+        # Immediately halt any previous speech before starting new speech
+        stop_speech()
+        
+        with _SPEECH_LOCK:
+            # 1. Android Termux TTS
+            if shutil.which("termux-tts-speak"):
+                _CURRENT_SPEECH_PROCESS = subprocess.Popen(["termux-tts-speak", clean_text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 return "Success: Speaking text via Termux TTS."
-            return f"Error triggering speech: {res.stderr}"
-            
-        # 2. macOS native say
-        elif shutil.which("say"):
-            res = subprocess.run(["say", clean_text], capture_output=True, text=True, timeout=10)
-            if res.returncode == 0:
+                
+            # 2. macOS native say
+            elif sys.platform == "darwin" or shutil.which("say"):
+                _CURRENT_SPEECH_PROCESS = subprocess.Popen(["say", clean_text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 return "Success: Speaking text via macOS native say command."
-            return f"Error triggering macOS speech: {res.stderr}"
-            
-        # 3. Windows PowerShell SAPI Speech
-        elif os.name == "nt":
-            safe_text = clean_text.replace("'", "''").replace('"', '`"')
-            ps_cmd = f"Add-Type -AssemblyName System.Speech; $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; $synth.Speak('{safe_text}')"
-            res = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd], capture_output=True, text=True, timeout=10)
-            if res.returncode == 0:
+                
+            # 3. Windows PowerShell SAPI Speech
+            elif os.name == "nt":
+                safe_text = clean_text.replace("'", "''").replace('"', '`"')
+                ps_cmd = f"Add-Type -AssemblyName System.Speech; $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; $synth.Speak('{safe_text}')"
+                _CURRENT_SPEECH_PROCESS = subprocess.Popen(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 return "Success: Speaking text via Windows SAPI."
-            return f"Notice: Windows SAPI error: {res.stderr}"
-            
-        # 4. Linux spd-say
-        elif shutil.which("spd-say"):
-            res = subprocess.run(["spd-say", clean_text], capture_output=True, text=True, timeout=10)
-            if res.returncode == 0:
+                
+            # 4. Linux spd-say
+            elif shutil.which("spd-say"):
+                _CURRENT_SPEECH_PROCESS = subprocess.Popen(["spd-say", clean_text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 return "Success: Speaking text via Linux spd-say."
-            return f"Error triggering spd-say speech: {res.stderr}"
-            
-        # 5. Linux espeak-ng / espeak
-        elif shutil.which("espeak-ng") or shutil.which("espeak"):
-            cmd = "espeak-ng" if shutil.which("espeak-ng") else "espeak"
-            res = subprocess.run([cmd, clean_text], capture_output=True, text=True, timeout=10)
-            if res.returncode == 0:
+                
+            # 5. Linux espeak-ng / espeak
+            elif shutil.which("espeak-ng") or shutil.which("espeak"):
+                cmd = "espeak-ng" if shutil.which("espeak-ng") else "espeak"
+                _CURRENT_SPEECH_PROCESS = subprocess.Popen([cmd, clean_text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 return f"Success: Speaking text via Linux {cmd}."
-            return f"Error triggering espeak speech: {res.stderr}"
-            
-        else:
-            return "Notice: No Text-To-Speech engine found on host."
+                
+            else:
+                return "Notice: No Text-To-Speech engine found on host."
     except Exception as e:
         return f"Error executing speak tool: {str(e)}"
+
+def stop_speech():
+    """Immediately stops active Text-To-Speech audio processes across Android, macOS, Linux, and Windows."""
+    global _CURRENT_SPEECH_PROCESS
+    try:
+        import subprocess
+        import shutil
+        import sys
+        import os
+
+        # Terminate active process reference if tracked
+        with _SPEECH_LOCK:
+            if _CURRENT_SPEECH_PROCESS is not None:
+                try:
+                    if _CURRENT_SPEECH_PROCESS.poll() is None:
+                        _CURRENT_SPEECH_PROCESS.terminate()
+                        _CURRENT_SPEECH_PROCESS.kill()
+                except Exception:
+                    pass
+                _CURRENT_SPEECH_PROCESS = None
+
+        # Terminate system-level audio processes across platforms
+        # 1. Android Termux TTS
+        if shutil.which("termux-tts-speak"):
+            try:
+                subprocess.run(["pkill", "-f", "termux-tts-speak"], capture_output=True, timeout=2)
+            except Exception:
+                pass
+
+        # 2. macOS native say
+        if sys.platform == "darwin" or shutil.which("say"):
+            try:
+                subprocess.run(["killall", "say"], capture_output=True, timeout=2)
+            except Exception:
+                pass
+
+        # 3. Windows PowerShell SAPI
+        if os.name == "nt":
+            try:
+                subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", "Get-CimInstance Win32_Process -Filter \"Name = 'powershell.exe'\" | Where-Object { $_.CommandLine -like '*System.Speech*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"], capture_output=True, timeout=2)
+            except Exception:
+                pass
+
+        # 4. Linux spd-say / espeak
+        for p in ["spd-say", "espeak", "espeak-ng"]:
+            if shutil.which(p):
+                try:
+                    subprocess.run(["killall", p], capture_output=True, timeout=2)
+                except Exception:
+                    pass
+
+        return "Success: Speech audio stopped."
+    except Exception as e:
+        return f"Error stopping speech: {str(e)}"
 
 # =======================================================
 # LOCAL ADB AUTOMATION CONTROLLER (SCREEN CONTROL)
@@ -4318,12 +4371,13 @@ def smart_ui_type(target="", text="", press_enter=False):
             return f"Error typing text: {type_out}"
 
     time.sleep(0.3)
+    target_desc = f'element "{target}"' if target else 'active field'
     if press_enter or str(press_enter).lower() in ["true", "1", "yes"]:
         run_adb_command("shell input keyevent 66") # KEYCODE_ENTER
         time.sleep(0.5)
-        return f"Success: Typed '{text}' into {f'element \"{target}\"' if target else 'active field'} and submitted Enter/Search."
+        return f"Success: Typed '{text}' into {target_desc} and submitted Enter/Search."
 
-    return f"Success: Typed '{text}' into {f'element \"{target}\"' if target else 'active field'}."
+    return f"Success: Typed '{text}' into {target_desc}."
 
 
 def smart_ui_scroll(direction="down", amount=1):
@@ -4995,6 +5049,8 @@ def execute_local_tool(name, args_str):
             if not text:
                 return "Error: Missing required argument 'text'."
             return speak_text(text)
+        elif name == "stop_speech":
+            return stop_speech()
         elif name == "dns_lookup":
             domain = kwargs.get("domain")
             record_type = kwargs.get("record_type", "A")
@@ -6786,6 +6842,13 @@ def trigger_voice():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
         return jsonify({"status": "Voice trigger armed"})
+
+@app.route('/api/voice/stop', methods=['POST', 'GET'])
+def stop_voice():
+    """Immediately stops active voice speech audio across devices and platforms."""
+    detail = stop_speech()
+    return jsonify({"status": "stopped", "detail": detail})
+
 
 if __name__ == '__main__':
     import logging

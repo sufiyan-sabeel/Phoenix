@@ -6,8 +6,12 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Resolve project root directory
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Ensure standard macOS and Homebrew binary paths are available
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# Resolve project root directory safely across bash, zsh, and sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || exit 1
 
 # Define colors for output
@@ -46,7 +50,7 @@ brew update || echo -e "${YELLOW}Warning: brew update encountered minor warnings
 
 # 3. Install required CLI tools via brew
 echo -e "\n${BLUE}⚡ [2/4] Deploying macOS security toolchain & dependencies...${NC}"
-brew install python3 git nmap curl net-tools traceroute || echo -e "${YELLOW}Warning: Some brew packages were already installed.${NC}"
+brew install python3 git nmap curl || echo -e "${YELLOW}Warning: Some brew packages were already installed.${NC}"
 
 # Create workspace directory
 echo -e "\n${BLUE}📁 Initializing macOS workspace directory (~/PocketStrike-AI/workspace)...${NC}"

@@ -3,8 +3,9 @@
 # PocketstrikeAI Launcher Script for Linux (Debian / Ubuntu / Kali / Mint)
 # Shows a terminal dashboard menu to configure or start the server.
 
-# Resolve project root directory
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Resolve project root directory safely across bash, zsh, and sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || exit 1
 
 # Colors (UI-Matching Cyber Theme)
@@ -49,7 +50,9 @@ import json
 try:
     with open("config.json") as f:
         cfg = json.load(f)
-        print(f"{cfg.get(\"provider_name\", \"Unknown\").upper()} ({cfg.get(\"model\", \"Unknown\")})")
+        p = cfg.get("provider_name", "Unknown").upper()
+        m = cfg.get("model", "Unknown")
+        print(p + " (" + m + ")")
 except Exception:
     print("Invalid Configuration")
 ' 2>/dev/null)
@@ -59,7 +62,8 @@ import json
 try:
     with open("config.json") as f:
         cfg = json.load(f)
-        print("Active (Hey Strike)" if cfg.get("voice_enabled", True) else "Disabled")
+        v = cfg.get("voice_enabled", True)
+        print("Active (Hey Strike)" if v else "Disabled")
 except Exception:
     print("Disabled")
 ' 2>/dev/null)
@@ -85,9 +89,9 @@ launch_server() {
         echo -e "Please run the Setup Wizard (Option 1) first."
         echo -e "\nWould you like to run it now? (y/n): "
         read -r choice
-        if [[ "$choice" =~ ^[Yy]$ ]]; then
-            run_setup
-        fi
+        case "$choice" in
+            [Yy]*) run_setup ;;
+        esac
         return
     fi
 

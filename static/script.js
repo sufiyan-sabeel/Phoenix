@@ -1396,12 +1396,17 @@ function setVoiceHudState(state, text = '') {
     const voiceHud = document.getElementById('voiceAssistantOverlay');
     const voiceHudStatus = document.getElementById('voiceHudStatus');
     const voiceHudTranscript = document.getElementById('voiceHudTranscript');
+    const voiceHudTip = document.getElementById('voiceHudTip');
+    const pauseBtn = document.getElementById('voiceHudPauseBtn');
+    const stopBtn = document.getElementById('voiceHudStopBtn');
     if (!voiceHud) return;
 
     voiceHud.classList.remove('listening', 'thinking', 'speaking', 'background');
 
     if (state === 'hidden') {
         voiceHud.classList.remove('active');
+        if (pauseBtn) pauseBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'none';
         return;
     }
 
@@ -1410,15 +1415,63 @@ function setVoiceHudState(state, text = '') {
     if (state === 'background') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Background Mode";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Waiting for "Hello Strike"...';
+        if (voiceHudTip) voiceHudTip.textContent = 'Listening for "Hey Strike" • Tap screen to cancel';
+        if (pauseBtn) pauseBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'none';
     } else if (state === 'listening') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Listening...";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Speak your command...';
+        if (voiceHudTip) voiceHudTip.textContent = 'Listening • Say command or tap ✕ to close';
+        if (pauseBtn) pauseBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'none';
     } else if (state === 'thinking') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Thinking...";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Processing command...';
+        if (voiceHudTip) voiceHudTip.textContent = 'Processing command...';
+        if (pauseBtn) pauseBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'none';
     } else if (state === 'speaking') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Speaking...";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Responding...';
+        if (voiceHudTip) voiceHudTip.textContent = 'Speaking • Tap Stop to interrupt';
+        if (pauseBtn) pauseBtn.style.display = 'inline-flex';
+        if (stopBtn) stopBtn.style.display = 'inline-flex';
+    }
+}
+
+let currentSpeechUtterance = null;
+
+// Immediately Stop / Interrupt Active Voice Speech
+function stopVoiceSpeaking() {
+    currentSpeechUtterance = null;
+
+    if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+    // Inform backend to abort any active host TTS processes (say / termux-tts / SAPI / espeak)
+    fetch('/api/voice/stop', { method: 'POST' }).catch(() => {});
+
+    const floatingBtn = document.getElementById('voiceFloatingStopBtn');
+    if (floatingBtn) floatingBtn.style.display = 'none';
+
+    const headerVoiceBtn = document.getElementById('voiceBtn');
+    if (headerVoiceBtn) headerVoiceBtn.classList.remove('voice-speaking');
+
+    const pauseBtn = document.getElementById('voiceHudPauseBtn');
+    if (pauseBtn) pauseBtn.style.display = 'none';
+
+    const stopBtn = document.getElementById('voiceHudStopBtn');
+    if (stopBtn) stopBtn.style.display = 'none';
+
+    // Transition back to active listening state if HUD is on
+    if (voiceState === 'speaking' || voiceState === 'greeting') {
+        voiceState = 'activated';
+        setVoiceHudState('listening', 'Speech stopped. I am listening...');
+        setTimeout(() => {
+            if (voiceState === 'activated' && !isGenerating && !isVoiceSending && speechRecognitionObj) {
+                try { speechRecognitionObj.start(); } catch (e) {}
+            }
+        }, 250);
     }
 }
 
@@ -1438,7 +1491,14 @@ function speakTextResponse(text, isGreeting = false) {
 
         setVoiceHudState('speaking', spokenText);
 
+        const floatingBtn = document.getElementById('voiceFloatingStopBtn');
+        if (floatingBtn) floatingBtn.style.display = 'inline-flex';
+
+        const headerVoiceBtn = document.getElementById('voiceBtn');
+        if (headerVoiceBtn) headerVoiceBtn.classList.add('voice-speaking');
+
         const utterance = new SpeechSynthesisUtterance(spokenText);
+        currentSpeechUtterance = utterance;
         utterance.rate = 1.05;
         utterance.pitch = 1.0;
 
@@ -1447,12 +1507,23 @@ function speakTextResponse(text, isGreeting = false) {
         if (preferredVoice) utterance.voice = preferredVoice;
 
         const onSpeechFinish = () => {
+            if (currentSpeechUtterance !== utterance) return;
+            currentSpeechUtterance = null;
+
+            if (floatingBtn) floatingBtn.style.display = 'none';
+            if (headerVoiceBtn) headerVoiceBtn.classList.remove('voice-speaking');
+
+            const stopBtn = document.getElementById('voiceHudStopBtn');
+            if (stopBtn) stopBtn.style.display = 'none';
+            const pauseBtn = document.getElementById('voiceHudPauseBtn');
+            if (pauseBtn) pauseBtn.style.display = 'none';
+
             if (isGreeting) {
                 // After saying "Hello, how can I assist you?", go straight to activated listening mode
                 voiceState = 'activated';
                 setVoiceHudState('listening', 'I am listening...');
                 setTimeout(() => {
-                    if (voiceState === 'activated') {
+                    if (voiceState === 'activated' && speechRecognitionObj) {
                         try { speechRecognitionObj.start(); } catch (e) {}
                     }
                 }, 150);
@@ -1461,7 +1532,7 @@ function speakTextResponse(text, isGreeting = false) {
                 voiceState = 'activated';
                 setVoiceHudState('listening', 'I am listening...');
                 setTimeout(() => {
-                    if (voiceState === 'activated' && !isGenerating && !isVoiceSending) {
+                    if (voiceState === 'activated' && !isGenerating && !isVoiceSending && speechRecognitionObj) {
                         try { speechRecognitionObj.start(); } catch (e) {}
                     }
                 }, 350);
@@ -1469,11 +1540,19 @@ function speakTextResponse(text, isGreeting = false) {
         };
 
         utterance.onend = onSpeechFinish;
-        utterance.onerror = onSpeechFinish;
+        utterance.onerror = (e) => {
+            if (e.error !== 'canceled') {
+                onSpeechFinish();
+            }
+        };
 
         window.speechSynthesis.speak(utterance);
     } catch (e) {
         console.error("Speech Synthesis error:", e);
+        const floatingBtn = document.getElementById('voiceFloatingStopBtn');
+        if (floatingBtn) floatingBtn.style.display = 'none';
+        const stopBtn = document.getElementById('voiceHudStopBtn');
+        if (stopBtn) stopBtn.style.display = 'none';
         voiceState = 'activated';
         setVoiceHudState('listening', 'I am listening...');
     }
@@ -1483,6 +1562,29 @@ function initVoiceAssistant() {
     const headerVoiceBtn = document.getElementById('voiceBtn');
     const inputVoiceBtn = document.getElementById('voiceInputBtn');
     const voiceHudClose = document.getElementById('voiceHudClose');
+    const voiceHudPauseBtn = document.getElementById('voiceHudPauseBtn');
+    const voiceHudStopBtn = document.getElementById('voiceHudStopBtn');
+    const voiceFloatingStopBtn = document.getElementById('voiceFloatingStopBtn');
+    const voiceHudVisualizer = document.getElementById('voiceHudVisualizer');
+
+    // Attach stop buttons
+    if (voiceHudPauseBtn) voiceHudPauseBtn.addEventListener('click', stopVoiceSpeaking);
+    if (voiceHudStopBtn) voiceHudStopBtn.addEventListener('click', stopVoiceSpeaking);
+    if (voiceFloatingStopBtn) voiceFloatingStopBtn.addEventListener('click', stopVoiceSpeaking);
+    if (voiceHudVisualizer) {
+        voiceHudVisualizer.addEventListener('click', () => {
+            if (voiceState === 'speaking' || voiceState === 'greeting') {
+                stopVoiceSpeaking();
+            }
+        });
+    }
+
+    // Keyboard shortcut: Escape key stops voice speech
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && (voiceState === 'speaking' || voiceState === 'greeting')) {
+            stopVoiceSpeaking();
+        }
+    });
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -1500,6 +1602,10 @@ function initVoiceAssistant() {
     speechRecognitionObj.lang = 'en-US';
 
     const toggleVoice = () => {
+        if (voiceState === 'speaking' || voiceState === 'greeting') {
+            stopVoiceSpeaking();
+            return;
+        }
         if (voiceState === 'off') {
             startVoiceListening();
         } else {
@@ -1623,14 +1729,27 @@ function startVoiceListening() {
 
 function stopVoiceListening() {
     voiceState = 'off';
+    currentSpeechUtterance = null;
     try { speechRecognitionObj.abort(); } catch (e) {}
     
     const headerVoiceBtn = document.getElementById('voiceBtn');
     const inputVoiceBtn = document.getElementById('voiceInputBtn');
-    if (headerVoiceBtn) headerVoiceBtn.classList.remove('active');
+    if (headerVoiceBtn) {
+        headerVoiceBtn.classList.remove('active');
+        headerVoiceBtn.classList.remove('voice-speaking');
+    }
     if (inputVoiceBtn) inputVoiceBtn.classList.remove('active');
+
+    const floatingBtn = document.getElementById('voiceFloatingStopBtn');
+    if (floatingBtn) floatingBtn.style.display = 'none';
+
+    const stopBtn = document.getElementById('voiceHudStopBtn');
+    if (stopBtn) stopBtn.style.display = 'none';
     
     setVoiceHudState('hidden');
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+    fetch('/api/voice/stop', { method: 'POST' }).catch(() => {});
 }
 

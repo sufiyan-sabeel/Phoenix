@@ -1806,6 +1806,44 @@ body.light-mode .tool-result-header:hover {
     transition: all 0.2s ease;
 }
 
+.voice-hud-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.voice-hud-stop-btn,
+.voice-hud-pause-btn {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(168, 85, 247, 0.3));
+    border: 1px solid rgba(239, 68, 68, 0.6);
+    color: #fee2e2;
+    border-radius: 16px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: none;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.voice-hud-stop-btn:hover,
+.voice-hud-pause-btn:hover {
+    background: rgba(239, 68, 68, 0.55);
+    border-color: #ef4444;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+}
+
+.voice-assistant-overlay.speaking .voice-hud-stop-btn,
+.voice-assistant-overlay.speaking .voice-hud-pause-btn {
+    display: inline-flex;
+    animation: stopGlow 1.5s infinite alternate;
+}
+
 .voice-hud-close-btn:hover {
     color: #fff;
     background: rgba(239, 68, 68, 0.3);
@@ -1900,6 +1938,58 @@ body.light-mode .tool-result-header:hover {
     font-size: 0.72rem;
     color: var(--text-muted);
     letter-spacing: 0.3px;
+}
+
+.voice-hud-visualizer-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.voice-hud-visualizer {
+    cursor: pointer;
+}
+
+/* Floating Stop Voice button in header */
+.voice-floating-stop-btn {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(168, 85, 247, 0.3));
+    border: 1px solid rgba(239, 68, 68, 0.6);
+    color: #fee2e2;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    animation: stopGlow 1.5s infinite alternate;
+    transition: all 0.2s ease;
+}
+
+.voice-floating-stop-btn:hover {
+    background: rgba(239, 68, 68, 0.55);
+    border-color: #ef4444;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+}
+
+.voice-btn.voice-speaking {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+    animation: voiceSpeakingPulse 1.2s infinite;
+}
+
+@keyframes voiceSpeakingPulse {
+    0% { transform: scale(1); box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+    50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(239, 68, 68, 0.7); }
+    100% { transform: scale(1); box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+}
+
+@keyframes stopGlow {
+    0% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+    100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.8); }
 }
 
 @keyframes dotPulse {

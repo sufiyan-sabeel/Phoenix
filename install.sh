@@ -64,8 +64,8 @@ pip install flask requests SpeechRecognition
 # 5. Make scripts executable
 echo -e "\n${BLUE}⚡ [4/4] Setting execution system permissions...${NC}"
 if [ -f "launch.sh" ]; then
-    chmod +x launch.sh
-    chmod +x setup.py
+    chmod +x launch.sh setup.py 2>/dev/null || true
+    chmod +x mac/*.sh linux/*.sh 2>/dev/null || true
     echo -e "${GREEN}Scripts are now executable.${NC}"
 else
     echo -e "${RED}Error: launch.sh still not found after download!${NC}"
