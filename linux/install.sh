@@ -6,6 +6,10 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# Resolve project root directory
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT" || exit 1
+
 # Define colors for output
 BLUE='\033[38;5;39m' # Vibrant Cyber Blue
 GREEN='\033[38;5;46m' # Bright Green
@@ -68,14 +72,15 @@ pip3 install --break-system-packages flask requests SpeechRecognition opencv-pyt
 
 # 5. Set execution permissions
 echo -e "\n${BLUE}⚡ [4/4] Setting execution system permissions...${NC}"
-chmod +x launch_linux.sh 2>/dev/null || true
+chmod +x linux/launch.sh 2>/dev/null || true
+chmod +x linux/install.sh 2>/dev/null || true
 chmod +x launch.sh 2>/dev/null || true
+chmod +x install.sh 2>/dev/null || true
 chmod +x setup.py 2>/dev/null || true
-chmod +x install_linux.sh 2>/dev/null || true
 
 echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "       ✨ ${BLUE}Pocket${GREEN}Strike-AI ${NC}— ${GREEN}Linux Deployment Complete!${NC} ✨"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "You can now initialize the setup wizard and launch the AI on Linux."
-echo -e "To launch, run: ${YELLOW}./launch_linux.sh${NC} or ${YELLOW}python3 server.py${NC}"
+echo -e "To launch, run: ${YELLOW}./linux/launch.sh${NC} or ${YELLOW}python3 server.py${NC}"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"

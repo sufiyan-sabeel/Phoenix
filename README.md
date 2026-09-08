@@ -3,40 +3,41 @@
 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Termux%20%7C%20Android-green?style=for-the-badge&logo=android" alt="Platform" />
+  <img src="https://img.shields.io/badge/Platform-Termux%20%7C%20Android%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-green?style=for-the-badge&logo=windows" alt="Platform" />
   <img src="https://img.shields.io/badge/Language-Python%20%7C%20JS-blue?style=for-the-badge&logo=python" alt="Languages" />
   <img src="https://img.shields.io/badge/Tools-76%20Built--in%20+%20MCP-purple?style=for-the-badge" alt="Tools" />
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" alt="License" />
 </p>
 
-## 🧠 AI Agent that gives Termux a Brain
-PocketStrike AI is a highly optimized, fully featured **super lightweight AI agent core** designed to bridge high-level reasoning with low-level Android/Linux device APIs. It is built to turn Termux into an autonomous system operator without bogging down your mobile device.
+## 🧠 AI Agent that gives Termux, Linux, macOS & Windows a Brain
+PocketStrike AI is a highly optimized, fully featured **super lightweight AI agent core** designed to bridge high-level reasoning with low-level device and operating system APIs. It runs seamlessly on Android (via Termux), native Linux distributions, macOS, and Windows (10/11).
 
-It couples a gorgeous, responsive, glassmorphic chat interface with an advanced ReAct (Reasoning and Action) Function Calling Framework and native Model Context Protocol (MCP) support. This allows you to inspect your phone’s system parameters, run subnet-wide network sweeps, execute background crons, dump active UI layouts for device automation, run sandboxed Python scripts, search the web using RAG, and connect to remote tool servers over SSE (Server-Sent Events).
+It couples a gorgeous, responsive, glassmorphic chat interface with an advanced ReAct (Reasoning and Action) Function Calling Framework and native Model Context Protocol (MCP) support. This allows you to inspect system parameters, run subnet-wide network sweeps, execute background crons, dump active UI layouts for device automation, run sandboxed Python scripts, search the web using RAG, and connect to remote tool servers over SSE (Server-Sent Events).
 
 Additionally, it integrates a Telegram Bot backend with unified session tracking, allowing you to trigger any of these system tools, check background schedules, or query your AI models remotely from your Telegram app.
 
 ### ⚡ Why is it Super Lightweight?
-*   **Zero Local AI Inference Overhead**: Instead of running massive, hot-running local LLMs on your mobile CPU (which consumes 4GB+ RAM and drains battery in minutes), PocketStrike AI acts as an **intelligent orchestrator**. It runs a lightweight ReAct state engine locally and delegates heavy token processing to remote API endpoints or local Ollama servers.
+*   **Zero Local AI Inference Overhead**: Instead of running massive, hot-running local LLMs on your mobile CPU or PC (consuming huge RAM and draining battery), PocketStrike AI acts as an **intelligent orchestrator**. It runs a lightweight ReAct state engine locally and delegates heavy token processing to remote API endpoints or local Ollama servers.
 *   **Minimal Memory Footprint**: The background Flask server is highly optimized, consuming only **30MB - 50MB of RAM** under active loads.
-*   **Ultra-Fast Vanilla Frontend**: The user interface is crafted using Vanilla HTML, CSS, and JS (no heavy layout engines like React or Tailwind), loading instantly even on older budget Android phones.
+*   **Ultra-Fast Vanilla Frontend**: The user interface is crafted using Vanilla HTML, CSS, and JS (no heavy layout engines like React or Tailwind), loading instantly even on older budget Android phones or low-resource machines.
 *   **Efficient Async I/O**: High-speed utilities (like network sweeps and port scanners) run via custom parallel Python threads, completing sweeps in seconds with negligible CPU usage.
 
 ### 📋 System Requirements & Storage Footprint
 | Component | Minimum Specification | Recommended Specification |
 | :--- | :--- | :--- |
-| **Processor (CPU)** | Quad-Core 1.4 GHz (e.g., Snapdragon 400 series) | Octa-Core 2.0 GHz+ (e.g., Snapdragon 600/700/800 series) |
+| **Processor (CPU)** | Dual-Core 1.4 GHz+ | Quad-Core 2.0 GHz+ |
 | **System Memory (RAM)**| 1 GB (with ~100MB free) | 2 GB or more |
-| **Operating System** | Android 7.0+ (via Termux app) | Android 10.0+ (via Termux app) |
+| **Operating System** | Android 7.0+ (Termux) / Linux / macOS 12+ / Windows 10/11 | Android 10+ / Linux / macOS / Windows 11 |
 | **Installation Space** | **~100 MB** total storage space (Core files + Python pip dependencies) | **~150 MB** (including cached logs & history) |
 
 ---
 
 ## 🚀 Daily Quick Launch (One-Liner)
-If you already completed the setup, open Termux and run this single command to launch your dashboard:
-```bash
-cd ~/PocketStrike-AI && bash launch.sh
-```
+If you already completed the setup:
+* **Android (Termux)**: `cd ~/PocketStrike-AI && bash launch.sh`
+* **Linux**: `cd ~/PocketStrike-AI && bash linux/launch.sh`
+* **macOS**: `cd ~/PocketStrike-AI && bash mac/launch.sh`
+* **Windows**: Double-click `windows\launch.bat` or run `.\windows\launch.bat` in PowerShell/CMD
 
 ---
 
@@ -45,12 +46,23 @@ cd ~/PocketStrike-AI && bash launch.sh
 📂 PocketStrike-AI/
 ├── 📄 LICENSE                # Open-source MIT License terms
 ├── 📄 README.md              # Detailed documentation, guides, and tool specifications
-├── 📄 install.sh             # Dependency installer (Python, Git, Termux-API, Nmap, Curl, etc.)
-├── 📄 launch.sh              # Terminal-based visual launcher dashboard and status check
+├── 📱 install.sh             # Android Termux automated installer script
+├── 📱 launch.sh              # Android Termux terminal visual dashboard launcher
+├── 📁 linux/                 # Linux dedicated scripts (Debian/Ubuntu/Kali/Mint)
+│   ├── 📄 install.sh         # Linux system & python installer script
+│   └── 📄 launch.sh          # Linux visual dashboard launcher
+├── 📁 mac/                   # macOS dedicated scripts (Homebrew / Apple Silicon & Intel)
+│   ├── 📄 install.sh         # macOS system & python installer script
+│   └── 📄 launch.sh          # macOS visual dashboard launcher
+├── 📁 windows/               # Windows dedicated scripts (Windows 10/11)
+│   ├── 📄 install.bat        # Windows batch installer wrapper (double-clickable)
+│   ├── 📄 install.ps1        # Windows PowerShell dependency and environment installer
+│   ├── 📄 launch.bat         # Windows batch launcher (double-clickable)
+│   └── 📄 launch.ps1         # Windows PowerShell terminal dashboard launcher
 ├── 📄 server.py              # Main Flask server, AI ReAct framework, and Telegram bot loop
-├── 📄 setup.py              # CLI Setup Wizard for API keys and Telegram bot options
+├── 📄 setup.py               # CLI Setup Wizard for API keys, providers, and bot options
 ├── 📂 static/                # Static assets for the Web chat interface
-│   ├── 📄 script.js          # Web event handling, EventSource streaming, and markdown parsing
+│   ├── 📄 script.js          # Web event handling, EventSource streaming, and UI logos
 │   └── 📄 style.css          # obsidian-dark / royal-blue responsive layout stylesheet
 └── 📂 templates/             # HTML Templates
     └── 📄 index.html         # Glassmorphic, modern chat dashboard interface
@@ -108,13 +120,13 @@ PocketStrike AI also runs natively on standard Linux desktop and server distribu
 ### Step 1: Run the Linux Installer (One-Liner)
 Open your terminal on Ubuntu, Debian, Kali, or Mint and run:
 ```bash
-git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git && cd PocketStrike-AI && sed -i 's/\r$//' install_linux.sh && bash install_linux.sh
+git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git && cd PocketStrike-AI && bash linux/install.sh
 ```
 
 ### Step 2: Launch the Linux Dashboard
 Run the Linux visual launcher:
 ```bash
-bash launch_linux.sh
+bash linux/launch.sh
 ```
 1. Select option `1` to run the **Setup Wizard** (Configure AI keys, model provider, and Telegram bot options).
 ---
@@ -126,17 +138,49 @@ PocketStrike AI runs natively on macOS (macOS 12+ / Sequoia / Sonoma / Ventura) 
 ### Step 1: Run the macOS Installer (One-Liner)
 Open Terminal on your Mac and run:
 ```bash
-git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git && cd PocketStrike-AI && sed -i '' 's/\r$//' install_mac.sh && bash install_mac.sh
+git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git && cd PocketStrike-AI && bash mac/install.sh
 ```
 
 ### Step 2: Launch the macOS Dashboard
 Run the macOS visual launcher:
 ```bash
-bash launch_mac.sh
+bash mac/launch.sh
 ```
 1. Select option `1` to run the **Setup Wizard**.
 2. Select option `2` to start the **PocketStrike AI Server**.
 3. Open `http://localhost:5000` in Safari or Chrome!
+
+---
+
+## 🪟 Installation & Setup on Windows (Windows 10 / 11)
+
+PocketStrike AI runs natively on Windows 10 and Windows 11 with full PowerShell integration, native SAPI text-to-speech, system notifications, memory diagnostics, and stateful shell execution:
+
+### Step 1: Clone the Repository
+Open PowerShell or Command Prompt:
+```powershell
+git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git
+cd PocketStrike-AI
+```
+
+### Step 2: Run the Windows Installer
+Run the installer script (or simply double-click `windows\install.bat` in File Explorer):
+```powershell
+.\windows\install.bat
+```
+*Or directly in PowerShell:*
+```powershell
+powershell -ExecutionPolicy Bypass -File .\windows\install.ps1
+```
+
+### Step 3: Launch the Windows Dashboard
+Launch your visual terminal dashboard (or double-click `windows\launch.bat`):
+```powershell
+.\windows\launch.bat
+```
+1. Select option `1` to run the **Setup Wizard** (choose your AI provider, model, API keys, and voice settings).
+2. Select option `2` to start the **PocketStrike AI Server**.
+3. Open `http://localhost:5000` in Edge, Chrome, or Firefox!
 
 ---
 

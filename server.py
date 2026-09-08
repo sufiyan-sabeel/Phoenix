@@ -11,6 +11,17 @@ import ast
 import shutil
 from flask import Flask, request, jsonify, render_template, send_from_directory, Response
 
+# Ensure UTF-8 output encoding for Windows terminals
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        os.system("") # Enable ANSI terminal escape sequences on Windows
+    except Exception:
+        pass
+
 # Setup Flask App
 # We serve templates from 'templates' and static files from 'static'
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -511,9 +522,31 @@ def jwt_decoder_analyzer(token):
         return f"Error decoding JWT token: {str(e)}"
 
 def system_process_monitor(filter_name=""):
-    """Monitors running system processes in Termux/Android, listing PID, user, CPU%, memory, and command lines."""
+    """Monitors running system processes, listing PID, user, CPU%, memory, and command lines."""
     try:
         import subprocess
+        if sys.platform == "win32" or os.name == "nt":
+            res = subprocess.run(["tasklist", "/fo", "table"], capture_output=True, text=True, timeout=10)
+            if res.returncode != 0:
+                res = subprocess.run(["tasklist"], capture_output=True, text=True, timeout=10)
+            lines = res.stdout.strip().splitlines()
+            if not lines:
+                return "No running process information returned."
+            header = lines[0]
+            divider = lines[1] if len(lines) > 1 else ""
+            proc_list = lines[2:] if len(lines) > 2 else lines[1:]
+            if filter_name:
+                proc_list = [line for line in proc_list if filter_name.lower() in line.lower()]
+            report = [
+                f"📊 Windows Process Monitor ({len(proc_list)} processes active" + (f", filtered by '{filter_name}'" if filter_name else "") + "):",
+                header,
+                divider or "──────────────────────────────────────────────────────────────────────────"
+            ]
+            report.extend(proc_list[:40])
+            if len(proc_list) > 40:
+                report.append(f"... and {len(proc_list) - 40} more processes.")
+            return "\n".join(report)
+
         res = subprocess.run(["ps", "aux"], capture_output=True, text=True, timeout=10)
         if res.returncode != 0:
             res = subprocess.run(["ps", "-ef"], capture_output=True, text=True, timeout=10)
@@ -569,17 +602,28 @@ def get_system_prompt():
         except Exception: pass
 
     import shutil
-    is_termux = shutil.which("pkg") is not None or os.path.exists("/data/data/com.termux")
-    os_name = "Android / Termux" if is_termux else "Linux System"
-    if not is_termux and os.path.exists("/etc/os-release"):
-        try:
-            with open("/etc/os-release") as f:
-                for line in f:
-                    if line.startswith("PRETTY_NAME="):
-                        os_name = line.split("=")[1].strip().strip('"')
-                        break
-        except Exception:
-            pass
+    import platform
+    is_windows = sys.platform == "win32" or os.name == "nt"
+    is_mac = sys.platform == "darwin"
+    is_termux = not is_windows and not is_mac and (shutil.which("pkg") is not None or os.path.exists("/data/data/com.termux"))
+
+    if is_windows:
+        os_name = f"Windows {platform.release()}" if hasattr(platform, 'release') else "Windows System"
+    elif is_mac:
+        os_name = "macOS"
+    elif is_termux:
+        os_name = "Android / Termux"
+    else:
+        os_name = "Linux System"
+        if os.path.exists("/etc/os-release"):
+            try:
+                with open("/etc/os-release") as f:
+                    for line in f:
+                        if line.startswith("PRETTY_NAME="):
+                            os_name = line.split("=")[1].strip().strip('"')
+                            break
+            except Exception:
+                pass
 
     platform_guidance = ""
     if is_termux:
@@ -587,6 +631,19 @@ def get_system_prompt():
 - You are running inside Termux on Android.
 - Mobile API tools (Termux:API, camera, location, TTS, notifications) and ADB controls are active.
 - Shell commands executed via execute_termux_command run in Termux bash."""
+    elif is_windows:
+        platform_guidance = f"""CURRENT RUNTIME ENVIRONMENT: Native Windows ({os_name})
+- You are running natively on a Windows workstation / PC ({os_name}).
+- You have UNRESTRICTED access to execute Windows shell commands, PowerShell commands, and security utilities via execute_termux_command.
+- CRITICAL TOOL ROUTING RULE: When running on Windows, DO NOT call Termux-only mobile API tools (like take_camera_photo, send_sms, make_phone_call, audit_sms_inbox, read_contacts_list, read_phone_sensors, set_brightness) UNLESS connected to an Android device via ADB/Shizuku.
+- Instead, perform tasks using standard Windows tools and PowerShell commands via execute_termux_command (e.g. 'powershell', 'netstat', 'ipconfig', 'tasklist', 'curl', 'ping', 'findstr', 'systeminfo', 'nmap', 'python', 'git', etc.).
+- Desktop notifications and audio alerts on Windows are handled natively via Windows notification center and system audio."""
+    elif is_mac:
+        platform_guidance = f"""CURRENT RUNTIME ENVIRONMENT: Native macOS ({os_name})
+- You are running natively on macOS.
+- You have UNRESTRICTED access to execute macOS terminal commands via execute_termux_command.
+- CRITICAL TOOL ROUTING RULE: When running on macOS, DO NOT call Termux-only mobile API tools UNLESS connected to an Android device via ADB.
+- Instead, perform tasks using standard macOS CLI tools via execute_termux_command."""
     else:
         platform_guidance = f"""CURRENT RUNTIME ENVIRONMENT: Native {os_name}
 - You are running natively on a Linux machine ({os_name}).
@@ -849,7 +906,70 @@ Instructions & Operational Guidelines:
 
 def get_system_stats():
     stats = {}
-    # Battery Capacity
+    is_windows = sys.platform == "win32" or os.name == "nt"
+
+    if is_windows:
+        # Windows Battery & Power
+        try:
+            import ctypes
+            class SYSTEM_POWER_STATUS(ctypes.Structure):
+                _fields_ = [
+                    ('ACLineStatus', ctypes.c_byte),
+                    ('BatteryFlag', ctypes.c_byte),
+                    ('BatteryLifePercent', ctypes.c_byte),
+                    ('SystemStatusFlag', ctypes.c_byte),
+                    ('BatteryLifeTime', ctypes.c_ulong),
+                    ('BatteryFullLifeTime', ctypes.c_ulong),
+                ]
+            sps = SYSTEM_POWER_STATUS()
+            if ctypes.windll.kernel32.GetSystemPowerStatus(ctypes.byref(sps)):
+                if sps.BatteryLifePercent != 255:
+                    stats["battery_level"] = f"{sps.BatteryLifePercent}%"
+                    charging_states = {0: "Discharging", 1: "Charging / AC Connected", 2: "Critical", 4: "Low", 8: "High"}
+                    stats["battery_status"] = charging_states.get(sps.ACLineStatus, "Plugged In" if sps.ACLineStatus == 1 else "On Battery")
+                else:
+                    stats["battery_level"] = "Desktop PC (No Battery)"
+                    stats["battery_status"] = "AC Power Connected"
+        except Exception:
+            stats["battery_level"] = "Unknown"
+            stats["battery_status"] = "Unknown"
+
+        # Windows Disk Storage
+        try:
+            total, used, free = shutil.disk_usage(WORKSPACE_DIR)
+            stats["storage_total"] = f"{total / (2**30):.2f} GB"
+            stats["storage_used"] = f"{used / (2**30):.2f} GB"
+            stats["storage_free"] = f"{free / (2**30):.2f} GB"
+        except Exception as e:
+            stats["storage_error"] = str(e)
+
+        # Windows RAM via GlobalMemoryStatusEx
+        try:
+            import ctypes
+            class MEMORYSTATUSEX(ctypes.Structure):
+                _fields_ = [
+                    ('dwLength', ctypes.c_ulong),
+                    ('dwMemoryLoad', ctypes.c_ulong),
+                    ('ullTotalPhys', ctypes.c_ulonglong),
+                    ('ullAvailPhys', ctypes.c_ulonglong),
+                    ('ullTotalPageFile', ctypes.c_ulonglong),
+                    ('ullAvailPageFile', ctypes.c_ulonglong),
+                    ('ullTotalVirtual', ctypes.c_ulonglong),
+                    ('ullAvailVirtual', ctypes.c_ulonglong),
+                    ('sullAvailExtendedVirtual', ctypes.c_ulonglong),
+                ]
+            stat = MEMORYSTATUSEX()
+            stat.dwLength = ctypes.sizeof(stat)
+            if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+                stats["ram_total"] = f"{stat.ullTotalPhys / (1024**2):.2f} MB ({stat.ullTotalPhys / (1024**3):.2f} GB)"
+                stats["ram_free"] = f"{stat.ullAvailPhys / (1024**2):.2f} MB ({stat.ullAvailPhys / (1024**3):.2f} GB)"
+                stats["ram_load"] = f"{stat.dwMemoryLoad}% in use"
+        except Exception as e:
+            stats["ram_error"] = str(e)
+
+        return json.dumps(stats, indent=2)
+
+    # Battery Capacity (Linux / Termux)
     try:
         if os.path.exists("/sys/class/power_supply/battery/capacity"):
             with open("/sys/class/power_supply/battery/capacity", "r") as f:
@@ -871,9 +991,9 @@ def get_system_stats():
             stats["battery_level"] = "Unknown"
             stats["battery_status"] = "Unknown"
             
-    # Disk Storage (Free Space in Termux home)
+    # Disk Storage (Free Space in Termux home / workspace)
     try:
-        total, used, free = shutil.disk_usage(os.path.expanduser("~"))
+        total, used, free = shutil.disk_usage(WORKSPACE_DIR)
         stats["storage_total"] = f"{total / (2**30):.2f} GB"
         stats["storage_used"] = f"{used / (2**30):.2f} GB"
         stats["storage_free"] = f"{free / (2**30):.2f} GB"
@@ -1025,10 +1145,13 @@ def local_network_scan():
         found_hosts = {}
         
         # 2. Fast ping sweep on the entire Class C range (1-254) in parallel
+        is_win = sys.platform == "win32" or os.name == "nt"
+
         def check_host(ip):
             try:
                 # Fast timeout of 0.8s
-                ping_res = subprocess.run(["ping", "-c", "1", "-W", "1", ip], capture_output=True, timeout=1.2)
+                ping_cmd = ["ping", "-n", "1", "-w", "800", ip] if is_win else ["ping", "-c", "1", "-W", "1", ip]
+                ping_res = subprocess.run(ping_cmd, capture_output=True, timeout=1.2)
                 if ping_res.returncode == 0:
                     # Attempt quick reverse hostname lookup
                     try:
@@ -1054,23 +1177,40 @@ def local_network_scan():
                 found_hosts[ip] = hostname
                 
         # 3. Read ARP cache to catch silent devices
-        try:
-            with open("/proc/net/arp", "r") as f:
-                arp_lines = f.readlines()
-                for line in arp_lines[1:]:
-                    parts = line.split()
-                    if len(parts) >= 4:
-                        ip = parts[0]
-                        mac = parts[3]
-                        if mac != "00:00:00:00:00:00" and ip.startswith(base_ip) and ip not in found_hosts:
-                            try:
-                                name_info = socket.gethostbyaddr(ip)
-                                hostname = name_info[0]
-                            except Exception:
-                                hostname = "Unknown Host"
-                            found_hosts[ip] = hostname
-        except Exception:
-            pass
+        arp_entries = []
+        if os.path.exists("/proc/net/arp"):
+            try:
+                with open("/proc/net/arp", "r") as f:
+                    arp_lines = f.readlines()
+                    for line in arp_lines[1:]:
+                        parts = line.split()
+                        if len(parts) >= 4:
+                            arp_entries.append((parts[0], parts[3].lower()))
+            except Exception:
+                pass
+        else:
+            try:
+                arp_res = subprocess.run(["arp", "-a"], capture_output=True, text=True, timeout=5)
+                if arp_res.returncode == 0:
+                    for line in arp_res.stdout.splitlines():
+                        line_clean = line.strip().replace("-", ":").lower()
+                        parts = line_clean.split()
+                        if len(parts) >= 2:
+                            ip_cand = parts[0]
+                            mac_cand = parts[1]
+                            if re.match(r'^\d+\.\d+\.\d+\.\d+$', ip_cand) and re.match(r'^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$', mac_cand):
+                                arp_entries.append((ip_cand, mac_cand))
+            except Exception:
+                pass
+
+        for ip, mac in arp_entries:
+            if mac not in ["00:00:00:00:00:00", "*", "ff:ff:ff:ff:ff:ff"] and ip.startswith(base_ip) and ip not in found_hosts:
+                try:
+                    name_info = socket.gethostbyaddr(ip)
+                    hostname = name_info[0]
+                except Exception:
+                    hostname = "Unknown Host"
+                found_hosts[ip] = hostname
             
         # Format list output
         hosts_output = []
@@ -1317,9 +1457,6 @@ def run_python_script(script_name, args=None):
     except Exception as e:
         return f"Error running script: {str(e)}"
 
-    except Exception as e:
-        return f"Error running script: {str(e)}"
-
 # =======================================================
 # STATEFUL BACKGROUND SHELL SESSION CONTROLLER
 # =======================================================
@@ -1332,6 +1469,11 @@ class StatefulShell:
         self.init_shell()
 
     def init_shell(self):
+        if os.name == "nt":
+            # On Windows, we use stateful directory-tracked PowerShell execution
+            self.current_directory = WORKSPACE_DIR
+            return
+
         try:
             import subprocess
             import queue
@@ -1375,6 +1517,64 @@ class StatefulShell:
         for token in forbidden_tokens:
             if token in cmd_str:
                 return f"Error: Command execution blocked. Forbidden token: '{token}'"
+
+        if os.name == "nt":
+            # On Windows, execute via PowerShell with stateful directory tracking
+            import subprocess
+            ps_script = f"""
+            $ErrorActionPreference = 'Continue'
+            {cmd_str}
+            Write-Output "__PKST_PWD__:$((Get-Location).Path)"
+            """
+            try:
+                res = subprocess.run(
+                    ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+                    capture_output=True,
+                    text=True,
+                    cwd=self.current_directory,
+                    timeout=timeout
+                )
+                output = res.stdout or ""
+                lines = output.splitlines(keepends=True)
+                clean_lines = []
+                for line in lines:
+                    if line.strip().startswith("__PKST_PWD__:"):
+                        new_pwd = line.strip().split(":", 1)[1].strip()
+                        if os.path.exists(new_pwd):
+                            self.current_directory = new_pwd
+                    else:
+                        clean_lines.append(line)
+                
+                result_str = "".join(clean_lines)
+                if res.stderr and res.stderr.strip():
+                    result_str += "\nStderr:\n" + res.stderr
+                if not result_str.strip():
+                    result_str = "Command executed successfully (no output)."
+                return result_str
+            except subprocess.TimeoutExpired:
+                return f"Command execution timed out after {timeout} seconds."
+            except Exception as e:
+                # Fallback to cmd.exe
+                try:
+                    cmd_wrapped = f"{cmd_str} & cd"
+                    res = subprocess.run(
+                        ["cmd.exe", "/c", cmd_wrapped],
+                        capture_output=True,
+                        text=True,
+                        cwd=self.current_directory,
+                        timeout=timeout
+                    )
+                    out_lines = (res.stdout or "").splitlines()
+                    if out_lines and os.path.exists(out_lines[-1].strip()):
+                        self.current_directory = out_lines[-1].strip()
+                        res_out = "\n".join(out_lines[:-1])
+                    else:
+                        res_out = res.stdout or ""
+                    if res.stderr:
+                        res_out += "\nStderr:\n" + res.stderr
+                    return res_out or "Command executed successfully (no output)."
+                except Exception as e2:
+                    return f"Error executing Windows command: {str(e2)}"
                 
         if not self.process or self.process.poll() is not None:
             # Restart shell if it crashed or terminated
@@ -2011,27 +2211,36 @@ def check_system_health(auto_install=False):
     import shutil
     import subprocess
     import sys
+    import os
     
     report = []
     missing_packages = []
-    
-    pkg_mgr = "pkg" if shutil.which("pkg") else ("apt" if shutil.which("apt") or shutil.which("apt-get") else ("dnf" if shutil.which("dnf") else ("pacman" if shutil.which("pacman") else "unknown")))
+    is_windows = sys.platform == "win32" or os.name == "nt"
 
-    cli_tools = {
-        "nmap": "nmap",
-        "git": "git",
-        "dig": "dnsutils",
-        "netstat": "net-tools",
-        "ip": "iproute2",
-        "traceroute": "traceroute",
-        "curl": "curl"
-    }
-    if pkg_mgr == "pkg":
-        cli_tools["termux-api"] = "termux-api"
-        cli_tools["adb"] = "android-tools"
+    if is_windows:
+        pkg_mgr = "winget" if shutil.which("winget") else ("choco" if shutil.which("choco") else ("scoop" if shutil.which("scoop") else "windows"))
+        cli_tools = {
+            "git": "Git.Git",
+            "curl": "curl",
+            "nmap": "Insecure.Nmap"
+        }
     else:
-        cli_tools["notify-send"] = "libnotify-bin"
-        cli_tools["spd-say"] = "speech-dispatcher"
+        pkg_mgr = "pkg" if shutil.which("pkg") else ("apt" if shutil.which("apt") or shutil.which("apt-get") else ("dnf" if shutil.which("dnf") else ("pacman" if shutil.which("pacman") else "unknown")))
+        cli_tools = {
+            "nmap": "nmap",
+            "git": "git",
+            "dig": "dnsutils",
+            "netstat": "net-tools",
+            "ip": "iproute2",
+            "traceroute": "traceroute",
+            "curl": "curl"
+        }
+        if pkg_mgr == "pkg":
+            cli_tools["termux-api"] = "termux-api"
+            cli_tools["adb"] = "android-tools"
+        else:
+            cli_tools["notify-send"] = "libnotify-bin"
+            cli_tools["spd-say"] = "speech-dispatcher"
     
     report.append(f"=== CLI Dependencies Audit (Package Manager: {pkg_mgr}) ===")
     for tool, pkg in cli_tools.items():
@@ -2064,7 +2273,9 @@ def check_system_health(auto_install=False):
             report.append("\n🛠️ [Auto-Installer] Starting installation of missing dependencies...")
             
             for pkg in missing_packages:
-                if pkg_mgr == "pkg":
+                if pkg_mgr == "winget":
+                    cmd = ["winget", "install", "-e", "--id", pkg, "--silent", "--accept-source-agreements", "--accept-package-agreements"]
+                elif pkg_mgr == "pkg":
                     cmd = ["pkg", "install", "-y", pkg]
                 elif pkg_mgr == "apt":
                     cmd = ["sudo", "apt-get", "install", "-y", pkg]
@@ -2507,7 +2718,7 @@ def run_adb_command(cmd_str):
                         shizuku_err = f"Shizuku test failed: {res.stderr.strip() or res.stdout.strip()}"
                 
                 elif cmd_str.startswith("pull "):
-                    parts = shlex.split(cmd_str)
+                    parts = cmd_str.split(maxsplit=2)
                     if len(parts) >= 3:
                         src = parts[1]
                         dest = parts[2]
@@ -2531,10 +2742,13 @@ def run_adb_command(cmd_str):
                 shell_cmd = cmd_str[6:]
                 res = subprocess.run(["adb", "shell", shell_cmd], capture_output=True, text=True, timeout=15)
             elif cmd_str.startswith("pull "):
-                parts = shlex.split(cmd_str)
+                parts = cmd_str.split(maxsplit=2)
                 res = subprocess.run(["adb"] + parts, capture_output=True, text=True, timeout=15)
             else:
-                parts = shlex.split(cmd_str)
+                try:
+                    parts = shlex.split(cmd_str, posix=(os.name != 'nt'))
+                except Exception:
+                    parts = cmd_str.split()
                 res = subprocess.run(["adb"] + parts, capture_output=True, text=True, timeout=15)
 
             if res.returncode == 0:
@@ -2856,29 +3070,40 @@ def get_network_details():
         
     try:
         import subprocess
-        res = subprocess.run(["ip", "addr"], capture_output=True, text=True, timeout=5)
-        if res.returncode == 0:
-            details["interfaces"] = res.stdout
+        if sys.platform == "win32" or os.name == "nt":
+            res = subprocess.run(["ipconfig", "/all"], capture_output=True, text=True, timeout=5)
+            if res.returncode == 0:
+                details["interfaces"] = res.stdout
+            res_r = subprocess.run(["route", "print"], capture_output=True, text=True, timeout=5)
+            if res_r.returncode == 0:
+                details["routing_table"] = res_r.stdout
         else:
-            res_if = subprocess.run(["ifconfig"], capture_output=True, text=True, timeout=5)
-            if res_if.returncode == 0:
-                details["interfaces"] = res_if.stdout
+            res = subprocess.run(["ip", "addr"], capture_output=True, text=True, timeout=5)
+            if res.returncode == 0:
+                details["interfaces"] = res.stdout
+            else:
+                res_if = subprocess.run(["ifconfig"], capture_output=True, text=True, timeout=5)
+                if res_if.returncode == 0:
+                    details["interfaces"] = res_if.stdout
+            res_route = subprocess.run(["ip", "route"], capture_output=True, text=True, timeout=5)
+            if res_route.returncode == 0:
+                details["routing_table"] = res_route.stdout
     except Exception as e:
         details["interfaces_error"] = str(e)
-        
-    try:
-        import subprocess
-        res = subprocess.run(["ip", "route"], capture_output=True, text=True, timeout=5)
-        if res.returncode == 0:
-            details["routing_table"] = res.stdout
-    except Exception:
-        pass
         
     return json.dumps(details, indent=2)
 
 def list_local_listeners():
     try:
         import subprocess
+        if sys.platform == "win32" or os.name == "nt":
+            res = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, timeout=5)
+            if res.returncode == 0:
+                lines = res.stdout.splitlines()
+                listeners = [line for line in lines if "LISTENING" in line.upper()]
+                return "\n".join(listeners) if listeners else "No active listeners found."
+            return f"Error running netstat: {res.stderr}"
+
         res = subprocess.run(["ss", "-tlnp"], capture_output=True, text=True, timeout=5)
         if res.returncode == 0 and res.stdout.strip():
             return res.stdout
@@ -2905,6 +3130,20 @@ def send_android_notification(title, message):
             if res.returncode == 0:
                 return "Success: Notification sent via Termux API."
             return f"Error: Command exited with code {res.returncode}. Output: {res.stderr}"
+        elif sys.platform == "win32" or os.name == "nt":
+            # Windows native notification via PowerShell Balloon
+            safe_title = title.replace("'", "''").replace('"', '`"')
+            safe_msg = message.replace("'", "''").replace('"', '`"')
+            ps_script = f"""
+            [reflection.assembly]::loadwithpartialname('System.Windows.Forms') | Out-Null
+            $notify = New-Object System.Windows.Forms.NotifyIcon
+            $notify.Icon = [System.Drawing.SystemIcons]::Information
+            $notify.Visible = $True
+            $notify.ShowBalloonTip(5000, '{safe_title}', '{safe_msg}', [System.Windows.Forms.ToolTipIcon]::Info)
+            """
+            subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", ps_script], capture_output=True, timeout=5)
+            print(f"🔔 [Windows Notification] {title}: {message}")
+            return "Success: Notification sent via Windows System Notification."
         elif shutil.which("osascript"):
             # macOS native notification
             clean_title = title.replace('"', '\\"')
@@ -2936,6 +3175,15 @@ def vibrate_device(duration_ms=500):
             if res.returncode == 0:
                 return f"Success: Device vibrated for {duration_ms}ms."
             return f"Error: Command exited with code {res.returncode}. Output: {res.stderr}"
+        elif sys.platform == "win32" or os.name == "nt":
+            try:
+                import winsound
+                dur = min(max(int(duration_ms), 100), 2000)
+                winsound.Beep(1000, dur)
+                return f"Success: Triggered Windows audio alert tone ({dur}ms)."
+            except Exception:
+                print('\a')
+                return "Success: Triggered system beep on Windows."
         else:
             send_android_notification("PocketStrike Alert", "Vibration Alert Triggered")
             return f"Notice: Physical vibration motor is specific to mobile devices. Triggered desktop notification alert on Linux."
@@ -3438,25 +3686,42 @@ def remove_scheduled_task(task_id):
 
 def detect_arp_spoofing():
     try:
+        arp_entries = []
         arp_file = "/proc/net/arp"
-        if not os.path.exists(arp_file):
-            return "Error: ARP table file /proc/net/arp is not accessible. This tool requires Android/Linux environment."
-            
-        with open(arp_file, "r") as f:
-            lines = f.readlines()
-            
+        if os.path.exists(arp_file):
+            with open(arp_file, "r") as f:
+                lines = f.readlines()
+            for line in lines[1:]:
+                parts = line.split()
+                if len(parts) >= 4:
+                    arp_entries.append((parts[0], parts[3].lower()))
+        else:
+            # Fallback for Windows and macOS
+            import subprocess
+            res = subprocess.run(["arp", "-a"], capture_output=True, text=True, timeout=5)
+            if res.returncode == 0:
+                for line in res.stdout.splitlines():
+                    line_clean = line.strip().replace("-", ":").lower()
+                    parts = line_clean.split()
+                    if len(parts) >= 2:
+                        ip_cand = parts[0]
+                        mac_cand = parts[1]
+                        if re.match(r'^\d+\.\d+\.\d+\.\d+$', ip_cand) and re.match(r'^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$', mac_cand):
+                            arp_entries.append((ip_cand, mac_cand))
+            else:
+                return "Error: Could not retrieve ARP table on this system."
+
+        if not arp_entries:
+            return "Notice: No entries found in the ARP cache."
+
         mac_to_ips = {}
-        for line in lines[1:]:
-            parts = line.split()
-            if len(parts) >= 4:
-                ip = parts[0]
-                mac = parts[3].lower()
-                
-                if mac not in ["00:00:00:00:00:00", "*", "00:00:00:00:00:00:00:00"]:
-                    if mac not in mac_to_ips:
-                        mac_to_ips[mac] = []
+        for ip, mac in arp_entries:
+            if mac not in ["00:00:00:00:00:00", "*", "ff:ff:ff:ff:ff:ff", "00:00:00:00:00:00:00:00"]:
+                if mac not in mac_to_ips:
+                    mac_to_ips[mac] = []
+                if ip not in mac_to_ips[mac]:
                     mac_to_ips[mac].append(ip)
-                    
+
         spoofed_entries = []
         for mac, ips in mac_to_ips.items():
             if len(ips) > 1:
@@ -3464,18 +3729,18 @@ def detect_arp_spoofing():
                     "mac": mac,
                     "ips": ips
                 })
-                
+
         results = {
             "status": "safe",
             "message": "No active ARP spoofing detected. All MAC mappings are unique.",
             "mappings_checked": len(mac_to_ips)
         }
-        
+
         if spoofed_entries:
             results["status"] = "warning"
             results["message"] = "WARNING: Potential ARP Spoofing / MITM attack detected! Multiple IP addresses map to the same MAC address."
             results["conflicting_entries"] = spoofed_entries
-            
+
         return json.dumps(results, indent=2)
     except Exception as e:
         return f"Error executing ARP spoofing detector: {str(e)}"
@@ -6353,15 +6618,22 @@ def chat():
 def get_status():
     import shutil
     import sys
+    import platform
+    is_windows = sys.platform == "win32" or os.name == "nt"
     is_mac = sys.platform == "darwin"
-    is_termux = shutil.which("pkg") is not None or os.path.exists("/data/data/com.termux")
-    os_type = "mac" if is_mac else ("termux" if is_termux else "linux")
+    is_termux = not is_windows and not is_mac and (shutil.which("pkg") is not None or os.path.exists("/data/data/com.termux"))
     
-    if is_mac:
+    if is_windows:
+        os_type = "windows"
+        os_name = f"Windows {platform.release()}" if hasattr(platform, 'release') else "Windows System"
+    elif is_mac:
+        os_type = "mac"
         os_name = "macOS"
     elif is_termux:
+        os_type = "termux"
         os_name = "Android / Termux"
     else:
+        os_type = "linux"
         os_name = "Linux System"
         if os.path.exists("/etc/os-release"):
             try:

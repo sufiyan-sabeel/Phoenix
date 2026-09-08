@@ -2,6 +2,18 @@
 import json
 import os
 import sys
+import shutil
+
+# Ensure UTF-8 output and ANSI colors for Windows terminals
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        os.system("") # Enable ANSI virtual terminal processing on Windows
+    except Exception:
+        pass
 
 # Define colors for CLI terminal (matching UI theme)
 BLUE = "\033[38;5;39m" # Vibrant Cyber Blue
@@ -165,70 +177,84 @@ def main():
             print(f"{YELLOW}Warning: Telegram token was empty, disabling Telegram support.{NC}")
             telegram_enabled = False
 
-    # 5. Shizuku Phone Control Setup
+    # 5. Mobile Device Remote Control Setup (ADB / Shizuku)
     shizuku_enabled = False
-    print(f"\n{YELLOW}Shizuku Phone Remote Control Setup:{NC}")
-    sz_choice = get_input("Do you want to enable Shizuku phone remote control? (y/n)", "y").lower()
+    is_termux = os.path.exists("/data/data/com.termux") or (shutil.which("pkg") is not None and sys.platform != "win32")
     
-    if sz_choice in ["y", "yes"]:
-        import shutil
-        rish_path = shutil.which("rish")
-        
-        if rish_path:
-            print(f"{GREEN}[✓] Shizuku 'rish' client is already installed in your Termux PATH.{NC}")
-            shizuku_enabled = True
-        else:
-            print(f"{BLUE}Checking for Shizuku exported files in phone storage and downloads...{NC}")
-            possible_srcs = [
-                "/sdcard/Shizuku/rish",
-                "/storage/emulated/0/Shizuku/rish",
-                os.path.expanduser("~/storage/shared/Shizuku/rish"),
-                os.path.expanduser("~/storage/downloads/rish"),
-                os.path.expanduser("~/storage/downloads/Shizuku/rish"),
-                "/sdcard/Download/rish",
-                "/sdcard/Download/Shizuku/rish",
-                "/storage/emulated/0/Download/rish",
-                "/storage/emulated/0/Download/Shizuku/rish",
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "rish")),
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "workspace", "rish"))
-            ]
-            
-            shizuku_src = None
-            for path in possible_srcs:
-                if os.path.exists(path):
-                    shizuku_src = path
-                    break
-                
-            if shizuku_src:
-                try:
-                    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
-                    termux_bin = os.path.join(prefix, "bin")
-                    if os.path.exists(termux_bin):
-                        import glob
-                        src_dir = os.path.dirname(shizuku_src)
-                        for fpath in glob.glob(os.path.join(src_dir, "rish*")):
-                            dest_file = os.path.join(termux_bin, os.path.basename(fpath))
-                            shutil.copy(fpath, dest_file)
-                            
-                        os.chmod(os.path.join(termux_bin, "rish"), 0o755)
-                        dex_file = os.path.join(termux_bin, "rish_shizuku.dex")
-                        if os.path.exists(dex_file):
-                            os.chmod(dex_file, 0o444)
-                            
-                        print(f"{GREEN}[✓] Shizuku 'rish' successfully auto-installed to your Termux bin path: {termux_bin}!{NC}")
-                        print(f"{BLUE}Note: When you run the server and send the first command, tap 'Always Allow' on the Shizuku popup.{NC}")
-                        shizuku_enabled = True
-                except Exception as e:
-                    print(f"{RED}Failed to auto-install Shizuku rish files: {e}{NC}")
+    if not is_termux:
+        os_platform = "Windows" if sys.platform == "win32" else ("macOS" if sys.platform == "darwin" else "Linux")
+        print(f"\n{YELLOW}Mobile Device Remote Control Setup (ADB):{NC}")
+        print(f"{BLUE}On {os_platform}, PocketStrike AI can automate Android devices via ADB (over USB or Wi-Fi).{NC}")
+        sz_choice = get_input("Do you want to enable mobile device automation via ADB? (y/n)", "y").lower()
+        if sz_choice in ["y", "yes"]:
+            if shutil.which("adb"):
+                print(f"{GREEN}[✓] ADB is installed and detected in your system PATH.{NC}")
+                shizuku_enabled = True
             else:
-                print(f"{RED}[!] Could not find exported Shizuku files in downloads or storage.{NC}")
-                print(f"{YELLOW}To set up Shizuku phone control, please:{NC}")
-                print(f"  1. Open the Shizuku App on your phone.")
-                print(f"  2. Tap 'Use Shizuku in terminal apps' -> 'Export files'.")
-                print(f"  3. Save the files to your phone's main storage, Downloads folder, or directly into the project directory ({os.path.dirname(__file__)}).")
-                print(f"  4. Grant Termux storage access by running 'termux-setup-storage' in Termux.")
-                print(f"  5. Run this setup wizard again or let the server auto-detect it later.")
-                get_input("Press Enter to continue with setup", "")
+                print(f"{YELLOW}[!] Note: 'adb' executable was not detected in PATH. You can install it anytime to control connected phones.{NC}")
+                shizuku_enabled = False
+    else:
+        print(f"\n{YELLOW}Shizuku Phone Remote Control Setup:{NC}")
+        sz_choice = get_input("Do you want to enable Shizuku phone remote control? (y/n)", "y").lower()
+        
+        if sz_choice in ["y", "yes"]:
+            rish_path = shutil.which("rish")
+            
+            if rish_path:
+                print(f"{GREEN}[✓] Shizuku 'rish' client is already installed in your Termux PATH.{NC}")
+                shizuku_enabled = True
+            else:
+                print(f"{BLUE}Checking for Shizuku exported files in phone storage and downloads...{NC}")
+                possible_srcs = [
+                    "/sdcard/Shizuku/rish",
+                    "/storage/emulated/0/Shizuku/rish",
+                    os.path.expanduser("~/storage/shared/Shizuku/rish"),
+                    os.path.expanduser("~/storage/downloads/rish"),
+                    os.path.expanduser("~/storage/downloads/Shizuku/rish"),
+                    "/sdcard/Download/rish",
+                    "/sdcard/Download/Shizuku/rish",
+                    "/storage/emulated/0/Download/rish",
+                    "/storage/emulated/0/Download/Shizuku/rish",
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "rish")),
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), "workspace", "rish"))
+                ]
+                
+                shizuku_src = None
+                for path in possible_srcs:
+                    if os.path.exists(path):
+                        shizuku_src = path
+                        break
+                    
+                if shizuku_src:
+                    try:
+                        prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+                        termux_bin = os.path.join(prefix, "bin")
+                        if os.path.exists(termux_bin):
+                            import glob
+                            src_dir = os.path.dirname(shizuku_src)
+                            for fpath in glob.glob(os.path.join(src_dir, "rish*")):
+                                dest_file = os.path.join(termux_bin, os.path.basename(fpath))
+                                shutil.copy(fpath, dest_file)
+                                
+                            os.chmod(os.path.join(termux_bin, "rish"), 0o755)
+                            dex_file = os.path.join(termux_bin, "rish_shizuku.dex")
+                            if os.path.exists(dex_file):
+                                os.chmod(dex_file, 0o444)
+                                
+                            print(f"{GREEN}[✓] Shizuku 'rish' successfully auto-installed to your Termux bin path: {termux_bin}!{NC}")
+                            print(f"{BLUE}Note: When you run the server and send the first command, tap 'Always Allow' on the Shizuku popup.{NC}")
+                            shizuku_enabled = True
+                    except Exception as e:
+                        print(f"{RED}Failed to auto-install Shizuku rish files: {e}{NC}")
+                else:
+                    print(f"{RED}[!] Could not find exported Shizuku files in downloads or storage.{NC}")
+                    print(f"{YELLOW}To set up Shizuku phone control, please:{NC}")
+                    print(f"  1. Open the Shizuku App on your phone.")
+                    print(f"  2. Tap 'Use Shizuku in terminal apps' -> 'Export files'.")
+                    print(f"  3. Save the files to your phone's main storage, Downloads folder, or directly into the project directory ({os.path.dirname(__file__)}).")
+                    print(f"  4. Grant Termux storage access by running 'termux-setup-storage' in Termux.")
+                    print(f"  5. Run this setup wizard again or let the server auto-detect it later.")
+                    get_input("Press Enter to continue with setup", "")
 
     # 5.5 Voice Assistant Setup
     voice_enabled = True
@@ -268,9 +294,16 @@ def main():
         if telegram_enabled:
             print(f"  TG Token:        {'*' * 8}{telegram_token[-4:] if len(telegram_token) > 4 else ''}")
         print(f"  Voice Assistant: {'Enabled (Wake word: Hey Strike)' if voice_enabled else 'Disabled'}")
-        print(f"  Shizuku Control: {'Enabled/Configured' if shizuku_enabled else 'Disabled/Not Configured'}")
+        print(f"  Device Control:  {'Enabled/Configured' if shizuku_enabled else 'Disabled/Not Configured'}")
         print(f"\n{GREEN}PocketstrikeAI is ready to be launched!{NC}")
-        print(f"Run {YELLOW}./launch.sh{NC} and choose option 2 to launch.")
+        if sys.platform == "win32":
+            print(f"Run {YELLOW}windows\\launch.bat{NC} (or {YELLOW}python server.py{NC}) to launch.")
+        elif sys.platform == "darwin":
+            print(f"Run {YELLOW}./mac/launch.sh{NC} (or {YELLOW}python3 server.py{NC}) to launch.")
+        elif is_termux:
+            print(f"Run {YELLOW}./launch.sh{NC} and choose option 2 to launch.")
+        else:
+            print(f"Run {YELLOW}./linux/launch.sh{NC} (or {YELLOW}python3 server.py{NC}) to launch.")
         print(f"{CYAN}=================================================={NC}")
     except Exception as e:
         print(f"\n{RED}Error saving configuration: {e}{NC}")

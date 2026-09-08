@@ -6,6 +6,10 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# Resolve project root directory
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT" || exit 1
+
 # Define colors for output
 BLUE='\033[38;5;39m' # Vibrant Cyber Blue
 GREEN='\033[38;5;46m' # Bright Green
@@ -54,14 +58,15 @@ pip3 install flask requests SpeechRecognition opencv-python 2>/dev/null || pip i
 
 # 5. Set execution permissions
 echo -e "\n${BLUE}⚡ [4/4] Setting execution system permissions...${NC}"
-chmod +x launch_mac.sh 2>/dev/null || true
+chmod +x mac/launch.sh 2>/dev/null || true
+chmod +x mac/install.sh 2>/dev/null || true
 chmod +x launch.sh 2>/dev/null || true
+chmod +x install.sh 2>/dev/null || true
 chmod +x setup.py 2>/dev/null || true
-chmod +x install_mac.sh 2>/dev/null || true
 
 echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "       ✨ ${BLUE}Pocket${GREEN}Strike-AI ${NC}— ${GREEN}macOS Deployment Complete!${NC} ✨"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "You can now initialize the setup wizard and launch the AI on macOS."
-echo -e "To launch, run: ${YELLOW}./launch_mac.sh${NC} or ${YELLOW}python3 server.py${NC}"
+echo -e "To launch, run: ${YELLOW}./mac/launch.sh${NC} or ${YELLOW}python3 server.py${NC}"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"

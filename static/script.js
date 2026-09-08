@@ -306,6 +306,41 @@ async function fetchBackendStatus() {
                 const welcomeLogo = document.querySelector(".glowing-logo .welcome-logo-icon");
                 if (welcomeLogo) welcomeLogo.outerHTML = welcomeDragonSvg;
             }
+
+            // If running on Windows, render Cyber Windows grid logo and Windows system badges
+            if (data.os_type === "windows") {
+                document.body.classList.add("os-windows");
+                const subNote = document.getElementById("welcomeSubnote");
+                if (subNote) subNote.textContent = `PocketstrikeAI is online and running natively on ${data.os_name || 'Windows'}.`;
+                const footerNote = document.querySelector(".footer-note");
+                if (footerNote) footerNote.textContent = `PocketstrikeAI v1.0 • Running natively on ${data.os_name || 'Windows'}`;
+                
+                const winSvg = `<svg class="logo-icon windows-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="url(#winStroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                        <path d="M3 5.5L10.5 4.5V11.5H3V5.5Z" fill="url(#winGrad)"/>
+                        <path d="M12 4.3L21 3V11.5H12V4.3Z" fill="url(#winGrad)"/>
+                        <path d="M3 12.5H10.5V19.5L3 18.5V12.5Z" fill="url(#winGrad)"/>
+                        <path d="M12 12.5H21V21L12 19.7V12.5Z" fill="url(#winGrad)"/>
+                    </g>
+                    <defs>
+                        <linearGradient id="winGrad" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00ADEF" />
+                            <stop offset="0.5" stop-color="#0078D7" />
+                            <stop offset="1" stop-color="#8B5CF6" />
+                        </linearGradient>
+                        <linearGradient id="winStroke" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00FFCC" />
+                            <stop offset="1" stop-color="#0078D7" />
+                        </linearGradient>
+                    </defs>
+                </svg>`;
+
+                const welcomeWinSvg = winSvg.replace('class="logo-icon windows-icon"', 'class="welcome-logo-icon windows-icon"');
+                const sidebarLogo = document.querySelector(".logo-container .logo-icon");
+                if (sidebarLogo) sidebarLogo.outerHTML = winSvg;
+                const welcomeLogo = document.querySelector(".glowing-logo .welcome-logo-icon");
+                if (welcomeLogo) welcomeLogo.outerHTML = welcomeWinSvg;
+            }
         }
     } catch (error) {
         console.error('Error fetching backend status:', error);

@@ -3,6 +3,10 @@
 # PocketstrikeAI Launcher Script for macOS (Apple Silicon & Intel)
 # Shows a terminal dashboard menu to configure or start the server on macOS.
 
+# Resolve project root directory
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT" || exit 1
+
 # Colors (UI-Matching Cyber Theme)
 BLUE='\033[38;5;39m' # Vibrant Cyber Blue
 CYAN='\033[0;36m'
