@@ -1397,6 +1397,7 @@ function setVoiceHudState(state, text = '') {
     const voiceHudStatus = document.getElementById('voiceHudStatus');
     const voiceHudTranscript = document.getElementById('voiceHudTranscript');
     const voiceHudTip = document.getElementById('voiceHudTip');
+    const voiceHudPromptIcon = document.getElementById('voiceHudPromptIcon');
     const pauseBtn = document.getElementById('voiceHudPauseBtn');
     const stopBtn = document.getElementById('voiceHudStopBtn');
     if (!voiceHud) return;
@@ -1413,29 +1414,41 @@ function setVoiceHudState(state, text = '') {
     voiceHud.classList.add('active', state);
 
     if (state === 'background') {
-        if (voiceHudStatus) voiceHudStatus.textContent = "Background Mode";
-        if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Waiting for "Hello Strike"...';
-        if (voiceHudTip) voiceHudTip.textContent = 'Listening for "Hey Strike" • Tap screen to cancel';
+        if (voiceHudStatus) voiceHudStatus.textContent = "Standby";
+        if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Waiting for "Hey Strike"...';
+        if (voiceHudTip) voiceHudTip.textContent = 'Say "Hey Strike" to speak • Tap screen to cancel';
         if (pauseBtn) pauseBtn.style.display = 'none';
         if (stopBtn) stopBtn.style.display = 'none';
+        if (voiceHudPromptIcon) {
+            voiceHudPromptIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>`;
+        }
     } else if (state === 'listening') {
-        if (voiceHudStatus) voiceHudStatus.textContent = "Listening...";
+        if (voiceHudStatus) voiceHudStatus.textContent = "Listening";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Speak your command...';
         if (voiceHudTip) voiceHudTip.textContent = 'Listening • Say command or tap ✕ to close';
         if (pauseBtn) pauseBtn.style.display = 'none';
         if (stopBtn) stopBtn.style.display = 'none';
+        if (voiceHudPromptIcon) {
+            voiceHudPromptIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="10" y1="23" x2="14" y2="23"></line></svg>`;
+        }
     } else if (state === 'thinking') {
-        if (voiceHudStatus) voiceHudStatus.textContent = "Thinking...";
+        if (voiceHudStatus) voiceHudStatus.textContent = "Thinking";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Processing command...';
-        if (voiceHudTip) voiceHudTip.textContent = 'Processing command...';
+        if (voiceHudTip) voiceHudTip.textContent = 'Processing request...';
         if (pauseBtn) pauseBtn.style.display = 'none';
         if (stopBtn) stopBtn.style.display = 'none';
+        if (voiceHudPromptIcon) {
+            voiceHudPromptIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></svg>`;
+        }
     } else if (state === 'speaking') {
-        if (voiceHudStatus) voiceHudStatus.textContent = "Speaking...";
+        if (voiceHudStatus) voiceHudStatus.textContent = "Speaking";
         if (voiceHudTranscript) voiceHudTranscript.textContent = text || 'Responding...';
         if (voiceHudTip) voiceHudTip.textContent = 'Speaking • Tap Stop to interrupt';
         if (pauseBtn) pauseBtn.style.display = 'inline-flex';
         if (stopBtn) stopBtn.style.display = 'inline-flex';
+        if (voiceHudPromptIcon) {
+            voiceHudPromptIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+        }
     }
 }
 
