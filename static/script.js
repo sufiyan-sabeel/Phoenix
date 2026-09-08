@@ -1394,6 +1394,7 @@ function cleanTextForSpeech(text) {
 // Visual HUD Manager
 function setVoiceHudState(state, text = '') {
     const voiceHud = document.getElementById('voiceAssistantOverlay');
+    const voiceHudBackdrop = document.getElementById('voiceBackdropBlur');
     const voiceHudStatus = document.getElementById('voiceHudStatus');
     const voiceHudTranscript = document.getElementById('voiceHudTranscript');
     const voiceHudTip = document.getElementById('voiceHudTip');
@@ -1406,12 +1407,16 @@ function setVoiceHudState(state, text = '') {
 
     if (state === 'hidden') {
         voiceHud.classList.remove('active');
+        if (voiceHudBackdrop) voiceHudBackdrop.classList.remove('active');
+        document.body.classList.remove('voice-hud-active');
         if (pauseBtn) pauseBtn.style.display = 'none';
         if (stopBtn) stopBtn.style.display = 'none';
         return;
     }
 
     voiceHud.classList.add('active', state);
+    if (voiceHudBackdrop) voiceHudBackdrop.classList.add('active');
+    document.body.classList.add('voice-hud-active');
 
     if (state === 'background') {
         if (voiceHudStatus) voiceHudStatus.textContent = "Standby";
@@ -1580,6 +1585,14 @@ function initVoiceAssistant() {
     const voiceFloatingStopBtn = document.getElementById('voiceFloatingStopBtn');
     const voiceHudVisualizer = document.getElementById('voiceHudVisualizer');
 
+    // Dismiss voice assistant when clicking background blur overlay
+    const voiceBackdropBlur = document.getElementById('voiceBackdropBlur');
+    if (voiceBackdropBlur) {
+        voiceBackdropBlur.addEventListener('click', () => {
+            stopVoiceListening();
+        });
+    }
+
     // Attach stop buttons
     if (voiceHudPauseBtn) voiceHudPauseBtn.addEventListener('click', stopVoiceSpeaking);
     if (voiceHudStopBtn) voiceHudStopBtn.addEventListener('click', stopVoiceSpeaking);
@@ -1643,30 +1656,40 @@ function initVoiceAssistant() {
 
         const rawText = transcript.trim();
         if (!rawText) return;
-        const lowerText = rawText.toLowerCase();
 
-        const wakeWords = ["hello strike", "hey strike", "ok strike", "hi strike"];
+        // Punctuation-resilient wake word regex (supports "Hey, Strike.", "Hello, Strike!", "Hi strike", "Okay Strike", "Hey Pocket Strike", "Strike,")
+        const WAKE_WORD_REGEX = /(?:(?:hello|hey|hi|ok|okay)\s*[,.-]?\s*(?:pocket\s*[,.-]?\s*)?strike|(?:^|[.?!;])\s*(?:pocket\s*[,.-]?\s*)?strike)\b[\s,.-]*/i;
+        const hasWakeWord = WAKE_WORD_REGEX.test(rawText);
 
-        // 1. If we are in background mode, ONLY listen for the wake word
-        if (voiceState === 'background') {
-            const hasWakeWord = wakeWords.some(w => lowerText.includes(w));
-            if (hasWakeWord) {
-                // Wake word detected! Abort current recognition and trigger greeting
+        if (hasWakeWord) {
+            const cleanCommand = rawText.replace(WAKE_WORD_REGEX, '').replace(/^[,\s\.\?!]+|[,\s\.\?!]+$/g, '').trim();
+
+            if (cleanCommand.length === 0) {
+                // Standalone Wake Word: "Hey Strike" / "Hello Strike"
+                if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
                 try { speechRecognitionObj.abort(); } catch (e) {}
                 playWakeChime();
                 speakTextResponse("Hello, how can I assist you?", true); // isGreeting = true
+                return;
+            } else {
+                // Wake word with inline command: e.g. "Hey Strike, scan network"
+                voiceState = 'activated';
+                setVoiceHudState('listening', `"${cleanCommand}"`);
+                chatInput.value = cleanCommand;
+                autoGrowInput();
+
+                if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
+                const silenceDelay = isFinal ? 400 : 900;
+                speechSilenceTimer = setTimeout(() => {
+                    submitVoicePrompt();
+                }, silenceDelay);
+                return;
             }
-            return;
         }
 
-        // 2. If we are in activated mode, treat speech as the actual command
+        // If in activated mode (user opened from mic button or assistant is listening)
         if (voiceState === 'activated') {
-            let cleanPrompt = rawText;
-            wakeWords.forEach(w => {
-                const reg = new RegExp(`\\b${w}\\b`, "gi");
-                cleanPrompt = cleanPrompt.replace(reg, '').trim();
-            });
-
+            const cleanPrompt = rawText.replace(/^[,\s\.\?!]+|[,\s\.\?!]+$/g, '').trim();
             if (cleanPrompt.length > 0) {
                 setVoiceHudState('listening', `"${cleanPrompt}"`);
                 chatInput.value = cleanPrompt;
@@ -1726,7 +1749,8 @@ function submitVoicePrompt() {
 function startVoiceListening() {
     if (!speechRecognitionObj) return;
     try {
-        voiceState = 'background';
+        voiceState = 'activated';
+        playWakeChime();
         speechRecognitionObj.start();
         
         const headerVoiceBtn = document.getElementById('voiceBtn');
@@ -1734,7 +1758,7 @@ function startVoiceListening() {
         if (headerVoiceBtn) headerVoiceBtn.classList.add('active');
         if (inputVoiceBtn) inputVoiceBtn.classList.add('active');
         
-        setVoiceHudState('background', 'Waiting for "Hello Strike"...');
+        setVoiceHudState('listening', 'I am listening... Speak or say "Hey Strike"');
     } catch (e) {
         console.error("Failed to start voice assistant:", e);
     }
@@ -1743,6 +1767,7 @@ function startVoiceListening() {
 function stopVoiceListening() {
     voiceState = 'off';
     currentSpeechUtterance = null;
+    if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
     try { speechRecognitionObj.abort(); } catch (e) {}
     
     const headerVoiceBtn = document.getElementById('voiceBtn');

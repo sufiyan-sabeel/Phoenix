@@ -58,7 +58,32 @@ mkdir -p ~/PocketStrike-AI/workspace || mkdir -p ./workspace
 
 # 4. Install Python dependencies
 echo -e "\n${BLUE}⚡ [3/4] Installing Python dependency layers...${NC}"
-pip3 install flask requests SpeechRecognition opencv-python 2>/dev/null || pip install flask requests SpeechRecognition opencv-python
+
+# Find Python 3 binary on macOS
+PYTHON_CMD="python3"
+if ! command -v python3 &>/dev/null; then
+    if command -v python &>/dev/null; then
+        PYTHON_CMD="python"
+    else
+        echo -e "${RED}Error: Python 3 executable not found after Homebrew install.${NC}"
+        exit 1
+    fi
+fi
+
+# Ensure pip module is available
+$PYTHON_CMD -m ensurepip --upgrade 2>/dev/null || true
+
+# Install Python packages using python3 -m pip with Homebrew PEP 668 compatibility
+$PYTHON_CMD -m pip install --upgrade pip 2>/dev/null || true
+$PYTHON_CMD -m pip install --break-system-packages flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || \
+$PYTHON_CMD -m pip install flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || \
+pip3 install --break-system-packages flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || \
+pip3 install flask requests SpeechRecognition opencv-python urllib3 2>/dev/null || {
+    echo -e "${YELLOW}Notice: Using isolated virtualenv for macOS Python packages...${NC}"
+    $PYTHON_CMD -m venv ~/PocketStrike-AI/.venv 2>/dev/null || $PYTHON_CMD -m venv ./.venv
+    source ~/PocketStrike-AI/.venv/bin/activate 2>/dev/null || source ./.venv/bin/activate 2>/dev/null || true
+    pip install flask requests SpeechRecognition opencv-python urllib3
+}
 
 # 5. Set execution permissions
 echo -e "\n${BLUE}⚡ [4/4] Setting execution system permissions...${NC}"

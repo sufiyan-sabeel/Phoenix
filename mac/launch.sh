@@ -11,6 +11,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || exit 1
 
+# Auto-activate macOS virtual environment if initialized
+if [ -d "$HOME/PocketStrike-AI/.venv" ]; then
+    source "$HOME/PocketStrike-AI/.venv/bin/activate" 2>/dev/null || true
+elif [ -d "$PROJECT_ROOT/.venv" ]; then
+    source "$PROJECT_ROOT/.venv/bin/activate" 2>/dev/null || true
+fi
+
 # Colors (UI-Matching Cyber Theme)
 BLUE='\033[38;5;39m' # Vibrant Cyber Blue
 CYAN='\033[0;36m'
