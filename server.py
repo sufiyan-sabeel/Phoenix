@@ -1,7 +1,46 @@
 #!/usr/bin/env python3
-import json
 import os
 import sys
+
+# Auto-resolve virtual environment dependencies on macOS / Linux if launched via bare system Python
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+_venv_dirs = [
+    os.path.join(_script_dir, ".venv"),
+    os.path.join(os.path.expanduser("~"), "PocketStrike-AI", ".venv"),
+]
+# Inject venv site-packages into sys.path
+for _v in _venv_dirs:
+    if os.path.isdir(_v):
+        import glob
+        _sites = glob.glob(os.path.join(_v, "lib", "python*", "site-packages"))
+        if not _sites:
+            _sites = glob.glob(os.path.join(_v, "Lib", "site-packages"))
+        for _s in _sites:
+            if _s not in sys.path:
+                sys.path.insert(0, _s)
+
+# If requests or flask is still missing, attempt to re-exec with virtualenv python binary
+try:
+    import requests
+    import flask
+except ImportError:
+    for _v in _venv_dirs:
+        _py = os.path.join(_v, "bin", "python3") if sys.platform != "win32" else os.path.join(_v, "Scripts", "python.exe")
+        if os.path.isfile(_py) and os.path.abspath(sys.executable) != os.path.abspath(_py):
+            try:
+                os.execv(_py, [_py] + sys.argv)
+            except Exception:
+                pass
+    # If still not found, try homebrew python
+    if sys.platform == "darwin":
+        for _hb in ["/opt/homebrew/bin/python3", "/usr/local/bin/python3"]:
+            if os.path.isfile(_hb) and os.path.abspath(sys.executable) != os.path.abspath(_hb):
+                try:
+                    os.execv(_hb, [_hb] + sys.argv)
+                except Exception:
+                    pass
+
+import json
 import socket
 import threading
 import time

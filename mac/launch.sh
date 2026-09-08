@@ -23,6 +23,20 @@ elif [ -d "$HOME/PocketStrike-AI/.venv" ]; then
     source "$HOME/PocketStrike-AI/.venv/bin/activate" 2>/dev/null || true
 fi
 
+# Resolve exact Python interpreter prioritizing virtual environment
+PYTHON_BIN="python3"
+if [ -x "$PROJECT_ROOT/.venv/bin/python3" ]; then
+    PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python3"
+elif [ -x "$PROJECT_ROOT/.venv/bin/python" ]; then
+    PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python"
+elif [ -x "$HOME/PocketStrike-AI/.venv/bin/python3" ]; then
+    PYTHON_BIN="$HOME/PocketStrike-AI/.venv/bin/python3"
+elif [ -x "/opt/homebrew/bin/python3" ]; then
+    PYTHON_BIN="/opt/homebrew/bin/python3"
+elif [ -x "/usr/local/bin/python3" ]; then
+    PYTHON_BIN="/usr/local/bin/python3"
+fi
+
 # Colors (UI-Matching Cyber Theme)
 BLUE='\033[38;5;39m' # Vibrant Cyber Blue
 CYAN='\033[0;36m'
@@ -60,7 +74,7 @@ show_menu() {
     echo -e " Status: $SETUP_STATUS"
     
     if [ "$CONFIG_EXISTS" = true ]; then
-        INFO=$(python3 -c '
+        INFO=$("$PYTHON_BIN" -c '
 import json
 try:
     with open("config.json") as f:
@@ -72,7 +86,7 @@ except Exception:
     print("Invalid Configuration")
 ' 2>/dev/null)
         echo -e " Active Model: ${CYAN}${INFO}${NC}"
-        VOICE_INFO=$(python3 -c '
+        VOICE_INFO=$("$PYTHON_BIN" -c '
 import json
 try:
     with open("config.json") as f:
@@ -92,13 +106,30 @@ except Exception:
     echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 }
 
+ensure_dependencies() {
+    if ! "$PYTHON_BIN" -c "import requests, flask" 2>/dev/null; then
+        echo -e "\n${YELLOW}⚡ Core dependencies missing for $PYTHON_BIN.${NC}"
+        echo -e "${CYAN}Running macOS installer to configure environment...${NC}\n"
+        chmod +x "$PROJECT_ROOT/mac/install.sh"
+        "$PROJECT_ROOT/mac/install.sh"
+        if [ -x "$PROJECT_ROOT/.venv/bin/python3" ]; then
+            PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python3"
+            source "$PROJECT_ROOT/.venv/bin/activate" 2>/dev/null || true
+        elif [ -x "/opt/homebrew/bin/python3" ]; then
+            PYTHON_BIN="/opt/homebrew/bin/python3"
+        fi
+    fi
+}
+
 run_setup() {
-    python3 setup.py
+    ensure_dependencies
+    "$PYTHON_BIN" setup.py
     echo -e "\nPress Enter to return to menu..."
     read -r
 }
 
 launch_server() {
+    ensure_dependencies
     if [ ! -f "config.json" ]; then
         echo -e "\n${RED}Error: Setup is not completed yet!${NC}"
         echo -e "Please run the Setup Wizard (Option 1) first."
@@ -110,8 +141,8 @@ launch_server() {
         return
     fi
 
-    echo -e "\n${CYAN}Starting PocketstrikeAI Server on macOS...${NC}"
-    python3 server.py
+    echo -e "\n${CYAN}Starting PocketstrikeAI Server on macOS using ($PYTHON_BIN)...${NC}"
+    "$PYTHON_BIN" server.py
 }
 
 while true; do

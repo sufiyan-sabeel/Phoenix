@@ -1630,6 +1630,7 @@ function speakTextResponse(text, isGreeting = false) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: spokenText })
     }).catch(() => {});
+}
 
 function initVoiceAssistant() {
     const headerVoiceBtn = document.getElementById('voiceBtn');
