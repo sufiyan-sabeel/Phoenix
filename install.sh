@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# PocketstrikeAI Installer Script for Termux
+# FOENIX Installer Script for Termux
 # Designed to set up the environment and dependencies.
 
 # Exit immediately if a command exits with a non-zero status
@@ -41,7 +41,7 @@ echo -e "${BLUE} | |__) |__   ___ | | _____| |_| (___ | |_ _ __ _| | ___ ${NC}"
 echo -e "${BLUE} |  ___/ _ \\ / __|| |/ / _ \\ __|\\___ \\| __| '__| | |/ / ${NC}"
 echo -e "${BLUE} | |  | (_) | (__ |   <  __/ |_ ____) | |_| |  | |   <  ${NC}"
 echo -e "${BLUE} |_|   \\___/ \\___||_|\\_\\___|\\__|_____/ \\__|_|  |_|_|\\_\\${NC}"
-echo -e "       🤳 ${BLUE}Pocket${GREEN}Strike-AI ${NC}— ${BLUE}Initializer${NC} 🤳"
+echo -e "       🤳 ${BLUE}FOENIX ${NC}— ${BLUE}Initializer${NC} 🤳"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "🚀 Starting high-performance on-device deployment..."
 echo -e "📱 Environment: Termux on Android"
@@ -71,7 +71,7 @@ mkdir -p ~/storage/shared/PocketStrike-AI || echo -e "${YELLOW}Warning: Could no
 # 3. Clone repository if launch.sh doesn't exist (e.g. running via curl download)
 CLONED=false
 if [ ! -f "launch.sh" ]; then
-    echo -e "\n${BLUE}Cloning PocketstrikeAI repository from GitHub...${NC}"
+    echo -e "\n${BLUE}Cloning FOENIX repository from GitHub...${NC}"
     git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git
     cd PocketStrike-AI || exit 1
     CLONED=true
@@ -93,7 +93,7 @@ else
 fi
 
 echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
-echo -e "       ✨ ${BLUE}Pocket${GREEN}Strike-AI ${NC}— ${GREEN}Deployed Successfully!${NC} ✨"
+echo -e "       ✨ ${BLUE}FOENIX ${NC}— ${GREEN}Deployed Successfully!${NC} ✨"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "You can now initialize the setup wizard and launch the AI."
 if [ "$CLONED" = true ]; then

@@ -1,8 +1,8 @@
 @echo off
-REM PocketstrikeAI Windows Launcher
+REM FOENIX Windows Launcher
 REM Starts the interactive dashboard menu in PowerShell
 
-title PocketStrike AI - Windows Launcher
+title FOENIX - Windows Launcher
 cd /d "%~dp0.."
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0launch.ps1"

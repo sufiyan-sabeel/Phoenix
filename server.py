@@ -223,7 +223,7 @@ def initialize_memory_files():
     # 5. Initialize agent.md (merge with legacy instructions if migrated)
     if not os.path.exists(agent_path):
         try:
-            content = "# Agent Directives\n- Role: You are PocketStrike AI, a powerful security and system assistant running in Termux on Android.\n- Personality: Technical, professional, and efficient.\n"
+            content = "# Agent Directives\n- Role: You are FOENIX, a powerful security and system assistant running in Termux on Android.\n- Personality: Technical, professional, and efficient.\n"
             if legacy_inst_content and legacy_inst_content != "No custom instructions saved yet.":
                 content += f"\n### Migrated Instructions:\n{legacy_inst_content}\n"
             with open(agent_path, "w", encoding="utf-8") as f:
@@ -264,13 +264,13 @@ def auto_evolve_memory_background(messages):
             with open(memory_path, "r", encoding="utf-8") as f:
                 memory_content = f.read().strip()
 
-        agent_content = "You are PocketStrike AI, a powerful local security and system assistant running in Termux on the user's Android phone."
+        agent_content = "You are FOENIX, a powerful local security and system assistant running in Termux on the user's Android phone."
         if os.path.exists(agent_path):
             with open(agent_path, "r", encoding="utf-8") as f:
                 agent_content = f.read().strip()
 
         # Build a reflection prompt
-        reflection_prompt = f"""You are the memory reflection unit for PocketStrike AI.
+        reflection_prompt = f"""You are the memory reflection unit for FOENIX.
 Your job is to analyze the recent conversation and update the agent's long-term memory files.
 
 Current files content:
@@ -668,7 +668,7 @@ def get_system_prompt():
                 memory_content = f.read().strip()
         except Exception: pass
 
-    agent_content = "You are PocketStrike AI, a powerful local security and system assistant running in the Linux terminal (or Termux on Android). You have full access to execute any Linux terminal commands, audit security parameters, run background tasks, parse files, scan networks, and manage systems."
+    agent_content = "You are FOENIX, a powerful local security and system assistant running in the Linux terminal (or Termux on Android). You have full access to execute any Linux terminal commands, audit security parameters, run background tasks, parse files, scan networks, and manage systems."
     if os.path.exists(agent_path):
         try:
             with open(agent_path, "r", encoding="utf-8") as f:
@@ -1168,7 +1168,7 @@ def local_port_scan(target_ip, ports_list=None):
         elif p == 21: banner_details["21"] = "FTP"
         elif p == 3306: banner_details["3306"] = "MySQL Database"
         elif p == 8080: banner_details["8080"] = "HTTP Alternate Web Server"
-        elif p == 5000: banner_details["5000"] = "Flask/PocketStrike AI Server"
+        elif p == 5000: banner_details["5000"] = "Flask/FOENIX Server"
         else: banner_details[str(p)] = "Unknown Service"
         
     results = {
@@ -2407,7 +2407,7 @@ def active_threat_sentinel_daemon():
             if now_time - last_arp_alert_time > 300:
                 arp_res_str = detect_arp_spoofing()
                 if "WARNING:" in arp_res_str or '"status": "warning"' in arp_res_str:
-                    msg = "🚨 PocketStrike Alert: Potential Wi-Fi MITM / ARP Spoofing attack detected! Multiple IPs mapped to one MAC address."
+                    msg = "🚨 FOENIX Alert: Potential Wi-Fi MITM / ARP Spoofing attack detected! Multiple IPs mapped to one MAC address."
                     
                     # Vibration and System Notification using termux-api
                     vibrate_device(1000)
@@ -2514,7 +2514,7 @@ def scan_nearby_signals():
 
     # Build Markdown Output
     md = []
-    md.append("# 📶 PocketStrike Wireless Signal Audit")
+    md.append("# 📶 FOENIX Wireless Signal Audit")
     md.append(f"Audit timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     
     # Wi-Fi Section
@@ -2822,9 +2822,9 @@ def run_adb_command(cmd_str):
                             os.chmod(dex_file, 0o444)
                             
                         rish_path = os.path.join(termux_bin, "rish")
-                        print(f"PocketstrikeAI: Auto-installed Shizuku rish binaries successfully to {termux_bin}!")
+                        print(f"FOENIX: Auto-installed Shizuku rish binaries successfully to {termux_bin}!")
                 except Exception as e:
-                    print(f"PocketstrikeAI: Shizuku auto-install failed: {e}")
+                    print(f"FOENIX: Shizuku auto-install failed: {e}")
                     
         use_shizuku = rish_path is not None
         shizuku_err = None
@@ -3327,7 +3327,7 @@ def vibrate_device(duration_ms=500):
                 print('\a')
                 return "Success: Triggered system beep on Windows."
         else:
-            send_android_notification("PocketStrike Alert", "Vibration Alert Triggered")
+            send_android_notification("FOENIX Alert", "Vibration Alert Triggered")
             return f"Notice: Physical vibration motor is specific to mobile devices. Triggered desktop notification alert on Linux."
     except Exception as e:
         return f"Error vibrating device: {str(e)}"
@@ -3566,7 +3566,7 @@ def scheduler_worker_loop():
     import datetime
     
     schedules_file = os.path.join(WORKSPACE_DIR, "schedules.json")
-    print("PocketstrikeAI Scheduler Thread started...")
+    print("FOENIX Scheduler Thread started...")
     
     while True:
         # Sleep for 15 seconds between ticks
@@ -3634,10 +3634,10 @@ def execute_scheduled_action(task, token):
         if token:
             target = "both"
             
-    msg = f"🔔 **PocketstrikeAI Alert** 🔔\n\nTask: {desc}"
+    msg = f"🔔 **FOENIX Alert** 🔔\n\nTask: {desc}"
     
     if target == "system" or target == "both":
-        send_android_notification("PocketstrikeAI Alert", desc)
+        send_android_notification("FOENIX Alert", desc)
         vibrate_device(800)
         speak_text(f"Notification: {desc}")
         
@@ -5328,7 +5328,7 @@ def execute_local_tool(name, args_str):
                             init_res = stdio_conn.send_request("initialize", {
                                 "protocolVersion": "2024-11-05",
                                 "capabilities": {},
-                                "clientInfo": {"name": "pocketstrike-client", "version": "1.0.0"}
+                                "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
                             })
                             if "error" not in init_res:
                                 stdio_conn.send_notification("notifications/initialized")
@@ -5712,7 +5712,7 @@ def load_unified_history():
         except Exception as e:
             print(f"Error loading unified history: {e}")
     return [
-        {"role": "system", "content": "You are PocketstrikeAI, a helpful, cool, and highly advanced local AI assistant. Keep responses engaging."}
+        {"role": "system", "content": "You are FOENIX, a helpful, cool, and highly advanced local AI assistant. Keep responses engaging."}
     ]
 
 def save_unified_history(history):
@@ -5962,7 +5962,7 @@ def init_stdio_mcp_connections():
                     init_res = stdio_conn.send_request("initialize", {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {},
-                        "clientInfo": {"name": "pocketstrike-client", "version": "1.0.0"}
+                        "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
                     })
                     if "error" not in init_res:
                         stdio_conn.send_notification("notifications/initialized")
@@ -6005,7 +6005,7 @@ def query_streamable_http_tools(url, headers=None):
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
-                "clientInfo": {"name": "pocketstrike-client", "version": "1.0.0"}
+                "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
             },
             "id": 100
         }
@@ -6065,7 +6065,7 @@ def call_streamable_http_tool(url, tool_name, arguments, headers=None):
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
-                "clientInfo": {"name": "pocketstrike-client", "version": "1.0.0"}
+                "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
             },
             "id": 100
         }
@@ -6195,7 +6195,7 @@ def query_remote_mcp_tools(url, headers=None):
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
                 "clientInfo": {
-                    "name": "pocketstrike-client",
+                    "name": "foenix-client",
                     "version": "1.0.0"
                 }
             },
@@ -6337,7 +6337,7 @@ def call_remote_mcp_tool(base_url, tool_name, arguments, headers=None):
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
                 "clientInfo": {
-                    "name": "pocketstrike-client",
+                    "name": "foenix-client",
                     "version": "1.0.0"
                 }
             },
@@ -6439,7 +6439,7 @@ def telegram_bot_loop(token):
 
                 # Handle basic commands
                 if text == "/start":
-                    welcome_text = "👋 Welcome to PocketStrikeAI! I am your personal security and automation assistant. Ask me anything!"
+                    welcome_text = "👋 Welcome to FOENIX! I am your personal security and automation assistant. Ask me anything!"
                     send_telegram_msg(token, chat_id, welcome_text)
                     register_telegram_chat(chat_id)
                     continue
@@ -6477,13 +6477,13 @@ def telegram_bot_loop(token):
                 
                 # Upload files to Telegram chat automatically if created/modified during execution
                 if "captured_photo.jpg" in ai_response.lower() and os.path.exists(photo_path):
-                    send_telegram_photo(token, chat_id, photo_path, caption="📸 PocketstrikeAI Camera Capture")
+                    send_telegram_photo(token, chat_id, photo_path, caption="📸 FOENIX Camera Capture")
                     # Clean up file to prevent duplicate triggers
                     try: os.remove(photo_path)
                     except Exception: pass
                     
                 if "captured_screenshot.png" in ai_response.lower() and os.path.exists(screenshot_path):
-                    send_telegram_photo(token, chat_id, screenshot_path, caption="📱 PocketstrikeAI Screenshot Capture")
+                    send_telegram_photo(token, chat_id, screenshot_path, caption="📱 FOENIX Screenshot Capture")
                     try: os.remove(screenshot_path)
                     except Exception: pass
 
@@ -6582,7 +6582,7 @@ def add_mcp_server():
         init_res = stdio_conn.send_request("initialize", {
             "protocolVersion": "2024-11-05",
             "capabilities": {},
-            "clientInfo": {"name": "pocketstrike-client", "version": "1.0.0"}
+            "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
         })
         if "error" in init_res:
             stdio_conn.stop()
@@ -6670,7 +6670,7 @@ def load_history():
         # Create default if not exists
         default_conv = {
             "id": "default",
-            "title": "PocketStrike AI Unified Chat",
+            "title": "FOENIX Unified Chat",
             "messages": unified_messages
         }
         conversations.append(default_conv)
@@ -6912,7 +6912,7 @@ def voice_listener_daemon():
 
                 print(f"🔊 Speaking response: {ai_response[:60]}...")
                 speak_text(ai_response)
-                send_android_notification("PocketStrike Voice AI", ai_response)
+                send_android_notification("FOENIX Voice AI", ai_response)
 
         except Exception as e:
             time.sleep(3)
@@ -6937,7 +6937,7 @@ def trigger_voice():
 
         if data.get("speak_on_device", False):
             speak_text(ai_response)
-            send_android_notification("PocketStrike Voice AI", ai_response)
+            send_android_notification("FOENIX Voice AI", ai_response)
 
         return jsonify({"response": ai_response, "history": updated_history})
     else:
@@ -7125,9 +7125,9 @@ if __name__ == '__main__':
                     if os.path.exists(dex_file):
                         os.chmod(dex_file, 0o444)
                     shizuku_provisioned = True
-                    print(f"PocketstrikeAI: Auto-installed Shizuku rish binaries on startup from {shizuku_src}!")
+                    print(f"FOENIX: Auto-installed Shizuku rish binaries on startup from {shizuku_src}!")
             except Exception as e:
-                print(f"PocketstrikeAI: Startup Shizuku auto-install failed: {e}")
+                print(f"FOENIX: Startup Shizuku auto-install failed: {e}")
         else:
             print("⚠️ Shizuku 'rish' not found in PATH or storage. Put 'rish' and 'rish_shizuku.dex' in your phone's main Downloads folder or in the project directory.")
 

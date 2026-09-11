@@ -1,4 +1,4 @@
-<img width="2009" height="461" alt="PocketStrike" src="https://github.com/user-attachments/assets/e4121dc8-b1d6-4bbd-b678-6d4853d8a33b" />
+<img width="2009" height="461" alt="FOENIX" src="https://github.com/user-attachments/assets/e4121dc8-b1d6-4bbd-b678-6d4853d8a33b" />
 
 
 
@@ -10,14 +10,14 @@
 </p>
 
 ## 🧠 AI Agent that gives Termux, Linux, macOS & Windows a Brain
-PocketStrike AI is a highly optimized, fully featured **super lightweight AI agent core** designed to bridge high-level reasoning with low-level device and operating system APIs. It runs seamlessly on Android (via Termux), native Linux distributions, macOS, and Windows (10/11).
+FOENIX is a highly optimized, fully featured **super lightweight AI agent core** designed to bridge high-level reasoning with low-level device and operating system APIs. It runs seamlessly on Android (via Termux), native Linux distributions, macOS, and Windows (10/11).
 
 It couples a gorgeous, responsive, glassmorphic chat interface with an advanced ReAct (Reasoning and Action) Function Calling Framework and native Model Context Protocol (MCP) support. This allows you to inspect system parameters, run subnet-wide network sweeps, execute background crons, dump active UI layouts for device automation, run sandboxed Python scripts, search the web using RAG, and connect to remote tool servers over SSE (Server-Sent Events).
 
 Additionally, it integrates a Telegram Bot backend with unified session tracking, allowing you to trigger any of these system tools, check background schedules, or query your AI models remotely from your Telegram app.
 
 ### ⚡ Why is it Super Lightweight?
-*   **Zero Local AI Inference Overhead**: Instead of running massive, hot-running local LLMs on your mobile CPU or PC (consuming huge RAM and draining battery), PocketStrike AI acts as an **intelligent orchestrator**. It runs a lightweight ReAct state engine locally and delegates heavy token processing to remote API endpoints or local Ollama servers.
+*   **Zero Local AI Inference Overhead**: Instead of running massive, hot-running local LLMs on your mobile CPU or PC (consuming huge RAM and draining battery), FOENIX acts as an **intelligent orchestrator**. It runs a lightweight ReAct state engine locally and delegates heavy token processing to remote API endpoints or local Ollama servers.
 *   **Minimal Memory Footprint**: The background Flask server is highly optimized, consuming only **30MB - 50MB of RAM** under active loads.
 *   **Ultra-Fast Vanilla Frontend**: The user interface is crafted using Vanilla HTML, CSS, and JS (no heavy layout engines like React or Tailwind), loading instantly even on older budget Android phones or low-resource machines.
 *   **Efficient Async I/O**: High-speed utilities (like network sweeps and port scanners) run via custom parallel Python threads, completing sweeps in seconds with negligible CPU usage.
@@ -115,7 +115,7 @@ Choose option `2` from the launcher. Open the **Local URL** in your phone's brow
 
 ## 🐧 Installation & Setup on Linux (Debian / Ubuntu / Kali / Mint)
 
-PocketStrike AI also runs natively on standard Linux desktop and server distributions using `apt` package manager:
+FOENIX also runs natively on standard Linux desktop and server distributions using `apt` package manager:
 
 ### Step 1: Run the Linux Installer (One-Liner)
 Open your terminal on Ubuntu, Debian, Kali, or Mint and run:
@@ -133,7 +133,7 @@ bash linux/launch.sh
 
 ## 🍎 Installation & Setup on macOS (Apple Silicon & Intel)
 
-PocketStrike AI runs natively on macOS (macOS 12+ / Sequoia / Sonoma / Ventura) using Homebrew:
+FOENIX runs natively on macOS (macOS 12+ / Sequoia / Sonoma / Ventura) using Homebrew:
 
 ### Step 1: Run the macOS Installer (One-Liner)
 Open Terminal on your Mac and run:
@@ -147,14 +147,14 @@ Run the macOS visual launcher:
 bash mac/launch.sh
 ```
 1. Select option `1` to run the **Setup Wizard**.
-2. Select option `2` to start the **PocketStrike AI Server**.
+2. Select option `2` to start the **FOENIX Server**.
 3. Open `http://localhost:5000` in Safari or Chrome!
 
 ---
 
 ## 🪟 Installation & Setup on Windows (Windows 10 / 11)
 
-PocketStrike AI runs natively on Windows 10 and Windows 11 with full PowerShell integration, native SAPI text-to-speech, system notifications, memory diagnostics, and stateful shell execution:
+FOENIX runs natively on Windows 10 and Windows 11 with full PowerShell integration, native SAPI text-to-speech, system notifications, memory diagnostics, and stateful shell execution:
 
 ### Step 1: Clone the Repository
 Open PowerShell or Command Prompt:
@@ -179,13 +179,13 @@ Launch your visual terminal dashboard (or double-click `windows\launch.bat`):
 .\windows\launch.bat
 ```
 1. Select option `1` to run the **Setup Wizard** (choose your AI provider, model, API keys, and voice settings).
-2. Select option `2` to start the **PocketStrike AI Server**.
+2. Select option `2` to start the **FOENIX Server**.
 3. Open `http://localhost:5000` in Edge, Chrome, or Firefox!
 
 ---
 
 ## 🔌 Model Context Protocol (MCP) Integration
-PocketStrike AI natively supports the **Model Context Protocol (MCP)** using the HTTP/SSE (Server-Sent Events) transport. This turns your Termux AI agent into an MCP Client, enabling it to dynamically load, query, and run tools hosted on remote servers (e.g., your PC, local network, or cloud).
+FOENIX natively supports the **Model Context Protocol (MCP)** using the HTTP/SSE (Server-Sent Events) transport. This turns your Termux AI agent into an MCP Client, enabling it to dynamically load, query, and run tools hosted on remote servers (e.g., your PC, local network, or cloud).
 
 ### How to Connect a Remote Server:
 1. **Host Binding**: Start your MCP server on the host machine. To allow connections from your phone, ensure you bind it to `0.0.0.0` (all network cards) and select the SSE transport.
@@ -194,17 +194,17 @@ PocketStrike AI natively supports the **Model Context Protocol (MCP)** using the
      fastmcp run --host 0.0.0.0 --transport sse your_script.py
      ```
 2. **Retrieve PC IP**: Locate the host PC's local IP address (e.g., `192.168.11.131`).
-3. **Register on Dashboard**: Open the PocketStrike Web UI on your phone:
+3. **Register on Dashboard**: Open the FOENIX Web UI on your phone:
    * Tap the **`+`** button in the **MCP Connections** section of the sidebar.
    * Provide a **Server Name** (e.g., `dice-roller`).
    * Enter the **SSE Endpoint URL** (e.g., `http://192.168.11.131:8000/sse`).
-4. **Automatic Handshake**: PocketStrike AI will establish an active SSE stream connection, perform the official **initialize/initialized protocol handshake**, fetch the available tools, and automatically inject the remote tool schemas directly into the AI's instruction set.
+4. **Automatic Handshake**: FOENIX will establish an active SSE stream connection, perform the official **initialize/initialized protocol handshake**, fetch the available tools, and automatically inject the remote tool schemas directly into the AI's instruction set.
 5. **Real-time Execution**: When the AI runs a remote tool, the request is wrapped in a standard JSON-RPC 2.0 structure, POSTed over the Wi-Fi network, and the result is returned live to the chat thread!
 
 ---
 
 ## 🎙️ Always-On Voice Assistant ("Hey Strike")
-PocketStrike AI features a background voice assistant that allows phone-wide, hands-free interaction:
+FOENIX features a background voice assistant that allows phone-wide, hands-free interaction:
 
 * **Background Wake-Word Listener**: Simply say **"Hey Strike"**, *"Strike"*, or *"Hey Pocket Strike"* while watching movies, playing games, or using any app on your phone.
 * **Auto Tool Execution & Speech Response**: The AI processes your spoken query, executes system/network/automation tools, and speaks the answer aloud using Android Text-To-Speech (`termux-tts-speak`).
@@ -235,7 +235,7 @@ PocketStrike AI features a background voice assistant that allows phone-wide, ha
 
 ## 🛡️ Local Privacy & Self-Evolving Memory Core
 
-PocketStrike AI is built with privacy-first principles. **Zero conversation data is leaked to external cloud history trackers.**
+FOENIX is built with privacy-first principles. **Zero conversation data is leaked to external cloud history trackers.**
 
 *   **Unified Conversation Log (`unified_history.json`):** Your conversations are saved locally in a single private JSON database in your internal workspace, syncing Web chats and Telegram streams.
 *   **Hermes-Style Persistent Memory Loop (Stored in `agent/` sub-folder):**
@@ -253,7 +253,7 @@ PocketStrike AI is built with privacy-first principles. **Zero conversation data
 
 ## 🔧 ReAct Function Calling Tools
 
-PocketStrike AI has access to **76 built-in local tools** to audit, crawl, and control systems:
+FOENIX has access to **76 built-in local tools** to audit, crawl, and control systems:
 
 > [!IMPORTANT]
 > Tools marked with **`[Requires Termux:API]`** require the **Termux:API** Android application (available on F-Droid) to be installed on your device, along with the CLI package (`pkg install termux-api`) configured inside Termux.
@@ -336,4 +336,3 @@ PocketStrike AI has access to **76 built-in local tools** to audit, crawl, and c
 | 74 | `get_screen_text()` | Returns a plain text dump of all visible text on the active screen. |
 | 75 | `tap_coordinates(x, y)` | Taps an exact pixel coordinate (x, y) on the screen. |
 | 76 | `see_screen(include_elements)` | Acts as the AI's eyes. Captures phone screen, detects foreground app/activity, and returns a numbered visual map of all interactive buttons, inputs, video cards, and text with coordinates. |
-

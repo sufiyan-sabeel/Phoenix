@@ -1,8 +1,8 @@
-# PocketstrikeAI Launcher Script for Windows 10 / 11
+# FOENIX Launcher Script for Windows 10 / 11
 # Shows a terminal dashboard menu to configure or start the server.
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.WindowTitle = "PocketStrike AI - Windows Dashboard"
+$Host.UI.RawUI.WindowTitle = "FOENIX - Windows Dashboard"
 
 # Resolve project root directory
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -38,22 +38,22 @@ function Show-DashboardMenu {
     }
 
     $BANNER = @'
-██████╗  ██████╗  ██████╗██╗  ██╗███████╗████████╗
-██╔══██╗██╔═══██╗██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝
-██████╔╝██║   ██║██║     █████╔╝ █████╗     ██║   
-██╔═══╝ ██║   ██║██║     ██╔═██╗ ██╔══╝     ██║   
-██║     ╚██████╔╝╚██████╗██║  ██╗███████╗   ██║   
-╚═╝      ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝   
-███████╗████████╗██████╗ ██╗██╗  ██╗███████╗     █████╗ ██╗
-██╔════╝╚══██╔══╝██╔══██╗██║██║ ██╔╝██╔════╝    ██╔══██╗██║
-███████╗   ██║   ██████╔╝██║█████╔╝ █████╗      ███████║██║
-╚════██║   ██║   ██╔══██╗██║██╔═██╗ ██╔══╝      ██╔══██║██║
-███████║   ██║   ██║  ██║██║██║  ██╗███████╗    ██║  ██║██║
-╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝    ╚═╝  ╚═╝╚═╝
+███████╗ ██████╗ ███╗   ██╗██╗██╗  ██╗███████╗
+██╔════╝██╔═══██╗████╗  ██║██║██║ ██╔╝██╔════╝
+█████╗  ██║   ██║██╔██╗ ██║██║█████╔╝ █████╗  
+██╔══╝  ██║   ██║██║╚██╗██║██║██╔═██╗ ██╔══╝  
+██║     ╚██████╔╝██║ ╚████║██║██║  ██╗███████╗
+╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝╚══════╝
+██████╗ ███████╗██╗  ██╗
+██╔══██╗██╔════╝██║  ██║
+██████╔╝█████╗  ███████║
+██╔══██╗██╔══╝  ██╔══██║
+██║  ██║███████╗██║  ██║
+╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 '@
 
     Write-Host "${BLUE}$BANNER${NC}"
-    Write-Host "       [+] ${BLUE}Pocket${GREEN}Strike-AI ${NC}- ${BLUE}Windows Dashboard${NC} [+]"
+    Write-Host "       [+] ${BLUE}FOENIX ${NC}- ${BLUE}Windows Dashboard${NC} [+]"
     Write-Host "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     Write-Host " Status: $setupStatus"
 
@@ -77,7 +77,7 @@ function Show-DashboardMenu {
     Write-Host "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     Write-Host " Please choose an option:`n"
     Write-Host "  [1] Run Interactive Setup Wizard"
-    Write-Host "  [2] Launch PocketstrikeAI Server & Bot"
+    Write-Host "  [2] Launch FOENIX Server & Bot"
     Write-Host "  [3] Exit"
     Write-Host "`n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 }
@@ -100,7 +100,7 @@ function Launch-Server {
         return
     }
 
-    Write-Host "`n${CYAN}Starting PocketstrikeAI Server on Windows...${NC}"
+    Write-Host "`n${CYAN}Starting FOENIX Server on Windows...${NC}"
     & $PYTHON server.py
 }
 

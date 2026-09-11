@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# PocketstrikeAI Launcher Script for macOS (Apple Silicon & Intel)
+# FOENIX Launcher Script for macOS (Apple Silicon & Intel)
 # Shows a terminal dashboard menu to configure or start the server on macOS.
 
 # Ensure standard macOS and Homebrew binary paths are available
@@ -71,7 +71,7 @@ show_menu() {
     echo -e "${WHITE}╚════██║   ██║   ██╔══██╗██║██╔═██╗ ██╔══╝      ██╔══██║██║${NC}"
     echo -e "${WHITE}███████║   ██║   ██║  ██║██║██║  ██╗███████╗    ██║  ██║██║${NC}"
     echo -e "${WHITE}╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝    ╚═╝  ╚═╝╚═╝${NC}"
-    echo -e "       🍎 ${BLUE}Pocket${GREEN}Strike-AI ${NC}— ${BLUE}macOS Dashboard${NC} 🍎"
+    echo -e "       🍎 ${BLUE}FOENIX ${NC}— ${BLUE}macOS Dashboard${NC} 🍎"
     echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     echo -e " Status: $SETUP_STATUS"
     
@@ -103,7 +103,7 @@ except Exception:
     echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     echo -e " Please choose an option:\n"
     echo -e "  [1] Run Interactive Setup Wizard"
-    echo -e "  [2] Launch PocketstrikeAI Server & Bot"
+    echo -e "  [2] Launch FOENIX Server & Bot"
     echo -e "  [3] Exit"
     echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 }
@@ -148,7 +148,7 @@ launch_server() {
         return
     fi
 
-    echo -e "\n${CYAN}Starting PocketstrikeAI Server on macOS using ($PYTHON_BIN)...${NC}"
+    echo -e "\n${CYAN}Starting FOENIX Server on macOS using ($PYTHON_BIN)...${NC}"
     "$PYTHON_BIN" server.py
 }
 

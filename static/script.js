@@ -166,7 +166,7 @@ function initEventListeners() {
 
 // Initialize Theme from LocalStorage or default to dark
 function initTheme() {
-    const savedTheme = localStorage.getItem('pocketstrike_theme') || 'dark';
+    const savedTheme = localStorage.getItem('foenix_theme') || 'dark';
     if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
         setLightModeIcon();
@@ -180,10 +180,10 @@ function initTheme() {
 function toggleTheme() {
     const isLight = document.body.classList.toggle('light-mode');
     if (isLight) {
-        localStorage.setItem('pocketstrike_theme', 'light');
+        localStorage.setItem('foenix_theme', 'light');
         setLightModeIcon();
     } else {
-        localStorage.setItem('pocketstrike_theme', 'dark');
+        localStorage.setItem('foenix_theme', 'dark');
         setDarkModeIcon();
     }
 }
@@ -237,9 +237,9 @@ async function fetchBackendStatus() {
             if (data.os_type === "mac") {
                 document.body.classList.add("os-mac");
                 const subNote = document.getElementById("welcomeSubnote");
-                if (subNote) subNote.textContent = `PocketstrikeAI is online and running natively on ${data.os_name || 'macOS'}.`;
+                if (subNote) subNote.textContent = `FOENIX is online and running natively on ${data.os_name || 'macOS'}.`;
                 const footerNote = document.querySelector(".footer-note");
-                if (footerNote) footerNote.textContent = `PocketstrikeAI v1.0 • Running natively on ${data.os_name || 'macOS'}`;
+                if (footerNote) footerNote.textContent = `FOENIX v1.0 • Running natively on ${data.os_name || 'macOS'}`;
                 
                 const macSvg = `<svg class="logo-icon mac-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="url(#macStroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
@@ -270,9 +270,9 @@ async function fetchBackendStatus() {
             if (data.os_type === "linux") {
                 document.body.classList.add("os-linux");
                 const subNote = document.getElementById("welcomeSubnote");
-                if (subNote) subNote.textContent = `PocketstrikeAI is online and running natively on ${data.os_name || 'Linux'}.`;
+                if (subNote) subNote.textContent = `FOENIX is online and running natively on ${data.os_name || 'Linux'}.`;
                 const footerNote = document.querySelector(".footer-note");
-                if (footerNote) footerNote.textContent = `PocketstrikeAI v1.0 • Running natively on ${data.os_name || 'Linux'}`;
+                if (footerNote) footerNote.textContent = `FOENIX v1.0 • Running natively on ${data.os_name || 'Linux'}`;
                 
                 const sidebarDragonSvg = `<svg class="logo-icon linux-dragon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="url(#dragonStroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
@@ -311,9 +311,9 @@ async function fetchBackendStatus() {
             if (data.os_type === "windows") {
                 document.body.classList.add("os-windows");
                 const subNote = document.getElementById("welcomeSubnote");
-                if (subNote) subNote.textContent = `PocketstrikeAI is online and running natively on ${data.os_name || 'Windows'}.`;
+                if (subNote) subNote.textContent = `FOENIX is online and running natively on ${data.os_name || 'Windows'}.`;
                 const footerNote = document.querySelector(".footer-note");
-                if (footerNote) footerNote.textContent = `PocketstrikeAI v1.0 • Running natively on ${data.os_name || 'Windows'}`;
+                if (footerNote) footerNote.textContent = `FOENIX v1.0 • Running natively on ${data.os_name || 'Windows'}`;
                 
                 const winSvg = `<svg class="logo-icon windows-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="url(#winStroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
@@ -374,12 +374,12 @@ function sanitizeAllConversations(convList) {
 // Load conversations from LocalStorage and sync with server
 async function loadConversations() {
     // 1. Initial load from LocalStorage for instant UI render
-    const saved = localStorage.getItem('pocketstrike_conversations');
+    const saved = localStorage.getItem('foenix_conversations');
     if (saved) {
         try {
             conversations = JSON.parse(saved);
             sanitizeAllConversations(conversations);
-            const savedActiveId = localStorage.getItem('pocketstrike_active_id');
+            const savedActiveId = localStorage.getItem('foenix_active_id');
             if (savedActiveId && conversations.some(c => c.id === savedActiveId)) {
                 activeConversationId = savedActiveId;
             } else if (conversations.length > 0) {
@@ -401,7 +401,7 @@ async function loadConversations() {
                 sanitizeAllConversations(conversations);
                 
                 // Set active conversation if not set or invalid
-                const savedActiveId = localStorage.getItem('pocketstrike_active_id');
+                const savedActiveId = localStorage.getItem('foenix_active_id');
                 if (savedActiveId && conversations.some(c => c.id === savedActiveId)) {
                     activeConversationId = savedActiveId;
                 } else {
@@ -409,8 +409,8 @@ async function loadConversations() {
                 }
                 
                 // Save back to LocalStorage to sync
-                localStorage.setItem('pocketstrike_conversations', JSON.stringify(conversations));
-                localStorage.setItem('pocketstrike_active_id', activeConversationId);
+                localStorage.setItem('foenix_conversations', JSON.stringify(conversations));
+                localStorage.setItem('foenix_active_id', activeConversationId);
                 renderAll();
             }
         }
@@ -421,8 +421,8 @@ async function loadConversations() {
 
 // Save conversations to LocalStorage and sync to server
 async function saveConversations() {
-    localStorage.setItem('pocketstrike_conversations', JSON.stringify(conversations));
-    localStorage.setItem('pocketstrike_active_id', activeConversationId);
+    localStorage.setItem('foenix_conversations', JSON.stringify(conversations));
+    localStorage.setItem('foenix_active_id', activeConversationId);
     
     // Sync to server background file storage
     try {
@@ -1214,7 +1214,7 @@ async function pollHistoryChanges() {
                     // Update active conversation reference
                     const activeChat = conversations.find(c => c.id === activeConversationId);
                     if (activeChat) {
-                        localStorage.setItem('pocketstrike_conversations', JSON.stringify(conversations));
+                        localStorage.setItem('foenix_conversations', JSON.stringify(conversations));
                         renderAll();
                         scrollToBottom();
                     }
