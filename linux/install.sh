@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# FOENIX Installer Script for Linux (Debian / Ubuntu / Kali / Mint / Elementary)
+# Phoenix Installer Script for Linux (Debian / Ubuntu / Kali / Mint / Elementary)
 # Designed to set up Linux system dependencies and Python environments.
 
 # Exit immediately if a command exits with a non-zero status
@@ -26,7 +26,7 @@ echo -e "${BLUE} | |__) |__   ___ | | _____| |_| (___ | |_ _ __ _| | ___ ${NC}"
 echo -e "${BLUE} |  ___/ _ \\ / __|| |/ / _ \\ __|\\___ \\| __| '__| | |/ / ${NC}"
 echo -e "${BLUE} | |  | (_) | (__ |   <  __/ |_ ____) | |_| |  | |   <  ${NC}"
 echo -e "${BLUE} |_|   \\___/ \\___||_|\\_\\___|\\__|_____/ \\__|_|  |_|_|\\_\\${NC}"
-echo -e "       🐧 ${BLUE}FOENIX ${NC}— ${BLUE}Linux Initializer (apt)${NC} 🐧"
+echo -e "       🐧 ${BLUE}Phoenix ${NC}— ${BLUE}Linux Initializer (apt)${NC} 🐧"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "🚀 Starting Linux high-performance system deployment..."
 echo -e "💻 Target OS: Debian / Ubuntu / Kali Linux / Linux Mint"
@@ -80,7 +80,7 @@ chmod +x install.sh 2>/dev/null || true
 chmod +x setup.py 2>/dev/null || true
 
 echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
-echo -e "       ✨ ${BLUE}FOENIX ${NC}— ${GREEN}Linux Deployment Complete!${NC} ✨"
+echo -e "       ✨ ${BLUE}Phoenix ${NC}— ${GREEN}Linux Deployment Complete!${NC} ✨"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "You can now initialize the setup wizard and launch the AI on Linux."
 echo -e "To launch, run: ${YELLOW}./linux/launch.sh${NC} or ${YELLOW}python3 server.py${NC}"

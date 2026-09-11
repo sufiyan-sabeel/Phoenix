@@ -1,8 +1,8 @@
 @echo off
-REM FOENIX Windows Launcher
+REM Phoenix Windows Launcher
 REM Starts the interactive dashboard menu in PowerShell
 
-title FOENIX - Windows Launcher
+title Phoenix - Windows Launcher
 cd /d "%~dp0.."
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0launch.ps1"

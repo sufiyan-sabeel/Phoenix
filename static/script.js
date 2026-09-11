@@ -237,9 +237,9 @@ async function fetchBackendStatus() {
             if (data.os_type === "mac") {
                 document.body.classList.add("os-mac");
                 const subNote = document.getElementById("welcomeSubnote");
-                if (subNote) subNote.textContent = `FOENIX is online and running natively on ${data.os_name || 'macOS'}.`;
+                if (subNote) subNote.textContent = `Phoenix is online and running natively on ${data.os_name || 'macOS'}.`;
                 const footerNote = document.querySelector(".footer-note");
-                if (footerNote) footerNote.textContent = `FOENIX v1.0 • Running natively on ${data.os_name || 'macOS'}`;
+                if (footerNote) footerNote.textContent = `Phoenix v1.0 • Running natively on ${data.os_name || 'macOS'}`;
                 
                 const macSvg = `<svg class="logo-icon mac-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="url(#macStroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
@@ -270,9 +270,9 @@ async function fetchBackendStatus() {
             if (data.os_type === "linux") {
                 document.body.classList.add("os-linux");
                 const subNote = document.getElementById("welcomeSubnote");
-                if (subNote) subNote.textContent = `FOENIX is online and running natively on ${data.os_name || 'Linux'}.`;
+                if (subNote) subNote.textContent = `Phoenix is online and running natively on ${data.os_name || 'Linux'}.`;
                 const footerNote = document.querySelector(".footer-note");
-                if (footerNote) footerNote.textContent = `FOENIX v1.0 • Running natively on ${data.os_name || 'Linux'}`;
+                if (footerNote) footerNote.textContent = `Phoenix v1.0 • Running natively on ${data.os_name || 'Linux'}`;
                 
                 const sidebarDragonSvg = `<svg class="logo-icon linux-dragon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="url(#dragonStroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
@@ -311,9 +311,9 @@ async function fetchBackendStatus() {
             if (data.os_type === "windows") {
                 document.body.classList.add("os-windows");
                 const subNote = document.getElementById("welcomeSubnote");
-                if (subNote) subNote.textContent = `FOENIX is online and running natively on ${data.os_name || 'Windows'}.`;
+                if (subNote) subNote.textContent = `Phoenix is online and running natively on ${data.os_name || 'Windows'}.`;
                 const footerNote = document.querySelector(".footer-note");
-                if (footerNote) footerNote.textContent = `FOENIX v1.0 • Running natively on ${data.os_name || 'Windows'}`;
+                if (footerNote) footerNote.textContent = `Phoenix v1.0 • Running natively on ${data.os_name || 'Windows'}`;
                 
                 const winSvg = `<svg class="logo-icon windows-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="url(#winStroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">

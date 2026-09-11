@@ -1,8 +1,8 @@
-# FOENIX Launcher Script for Windows 10 / 11
+# Phoenix Launcher Script for Windows 10 / 11
 # Shows a terminal dashboard menu to configure or start the server.
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.WindowTitle = "FOENIX - Windows Dashboard"
+$Host.UI.RawUI.WindowTitle = "Phoenix - Windows Dashboard"
 
 # Resolve project root directory
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -38,22 +38,16 @@ function Show-DashboardMenu {
     }
 
     $BANNER = @'
-███████╗ ██████╗ ███╗   ██╗██╗██╗  ██╗███████╗
-██╔════╝██╔═══██╗████╗  ██║██║██║ ██╔╝██╔════╝
-█████╗  ██║   ██║██╔██╗ ██║██║█████╔╝ █████╗  
-██╔══╝  ██║   ██║██║╚██╗██║██║██╔═██╗ ██╔══╝  
-██║     ╚██████╔╝██║ ╚████║██║██║  ██╗███████╗
-╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝╚══════╝
-██████╗ ███████╗██╗  ██╗
-██╔══██╗██╔════╝██║  ██║
-██████╔╝█████╗  ███████║
-██╔══██╗██╔══╝  ██╔══██║
-██║  ██║███████╗██║  ██║
-╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+███████╗██╗  ██╗ █████╗ ██████╗  ██████╗██╗  ██╗
+██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██║ ██╔╝ 
+█████╗  ███████║███████║██████╔╝██║     █████╔╝  
+██╔══╝  ██╔══██║██╔══██║██╔══██║██║     ██╔═██╗  
+██║     ██║  ██║██║  ██║██║  ██║╚██████╗██║  ██╗ 
+╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
 '@
 
     Write-Host "${BLUE}$BANNER${NC}"
-    Write-Host "       [+] ${BLUE}FOENIX ${NC}- ${BLUE}Windows Dashboard${NC} [+]"
+    Write-Host "       [+] ${BLUE}Phoenix ${NC}- ${BLUE}Windows Dashboard${NC} [+]"
     Write-Host "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     Write-Host " Status: $setupStatus"
 
@@ -77,7 +71,7 @@ function Show-DashboardMenu {
     Write-Host "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     Write-Host " Please choose an option:`n"
     Write-Host "  [1] Run Interactive Setup Wizard"
-    Write-Host "  [2] Launch FOENIX Server & Bot"
+    Write-Host "  [2] Launch Phoenix Server & Bot"
     Write-Host "  [3] Exit"
     Write-Host "`n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 }
@@ -100,7 +94,7 @@ function Launch-Server {
         return
     }
 
-    Write-Host "`n${CYAN}Starting FOENIX Server on Windows...${NC}"
+    Write-Host "`n${CYAN}Starting Phoenix Server on Windows...${NC}"
     & $PYTHON server.py
 }
 

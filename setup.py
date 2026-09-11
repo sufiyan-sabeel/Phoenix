@@ -24,18 +24,12 @@ RED = "\033[0;31m"
 NC = "\033[0m"
 WHITE = "\033[38;5;255m"
 
-BANNER = f"""{BLUE}███████╗ ██████╗ ███╗   ██╗██╗██╗  ██╗███████╗
-██╔════╝██╔═══██╗████╗  ██║██║██║ ██╔╝██╔════╝
-█████╗  ██║   ██║██╔██╗ ██║██║█████╔╝ █████╗  
-██╔══╝  ██║   ██║██║╚██╗██║██║██╔═██╗ ██╔══╝  
-██║     ╚██████╔╝██║ ╚████║██║██║  ██╗███████╗
-╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝╚══════╝{WHITE}"""
-BANNER2 = f"""{WHITE}██████╗ ███████╗██╗  ██╗
-██╔══██╗██╔════╝██║  ██║
-██████╔╝█████╗  ███████║
-██╔══██╗██╔══╝  ██╔══██║
-██║  ██║███████╗██║  ██║
-╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝{NC}"""
+BANNER = f"""{BLUE}███████╗██╗  ██╗ █████╗ ██████╗  ██████╗██╗  ██╗
+██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██║ ██╔╝ 
+█████╗  ███████║███████║██████╔╝██║     █████╔╝  
+██╔══╝  ██╔══██║██╔══██║██╔══██║██║     ██╔═██╗  
+██║     ██║  ██║██║  ██║██║  ██║╚██████╗██║  ██╗ 
+╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝{NC}"""
 
 def clear_screen():
     os.system('clear' if os.name != 'nt' else 'cls')
@@ -43,8 +37,7 @@ def clear_screen():
 def print_header():
     clear_screen()
     print(BANNER)
-    print(BANNER2)
-    print(f"       {BLUE}FOENIX {NC}— {BLUE}Onboarding{NC}")
+    print(f"       {BLUE}Phoenix {NC}— {BLUE}Onboarding{NC}")
     print(f"{GREEN}──────────────────────────────────────────────────────────────────────────{NC}\n")
 
 def get_input(prompt, default=None, is_password=False):
@@ -185,7 +178,7 @@ def main():
     if not is_termux:
         os_platform = "Windows" if sys.platform == "win32" else ("macOS" if sys.platform == "darwin" else "Linux")
         print(f"\n{YELLOW}Mobile Device Remote Control Setup (ADB):{NC}")
-        print(f"{BLUE}On {os_platform}, FOENIX can automate Android devices via ADB (over USB or Wi-Fi).{NC}")
+        print(f"{BLUE}On {os_platform}, Phoenix can automate Android devices via ADB (over USB or Wi-Fi).{NC}")
         sz_choice = get_input("Do you want to enable mobile device automation via ADB? (y/n)", "y").lower()
         if sz_choice in ["y", "yes"]:
             if shutil.which("adb"):
@@ -296,7 +289,7 @@ def main():
             print(f"  TG Token:        {'*' * 8}{telegram_token[-4:] if len(telegram_token) > 4 else ''}")
         print(f"  Voice Assistant: {'Enabled (Wake word: Hey Strike)' if voice_enabled else 'Disabled'}")
         print(f"  Device Control:  {'Enabled/Configured' if shizuku_enabled else 'Disabled/Not Configured'}")
-        print(f"\n{GREEN}FOENIX is ready to be launched!{NC}")
+        print(f"\n{GREEN}Phoenix is ready to be launched!{NC}")
         if sys.platform == "win32":
             print(f"Run {YELLOW}windows\\launch.bat{NC} (or {YELLOW}python server.py{NC}) to launch.")
         elif sys.platform == "darwin":

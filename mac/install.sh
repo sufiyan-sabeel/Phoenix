@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# FOENIX Installer Script for macOS (Homebrew)
+# Phoenix Installer Script for macOS (Homebrew)
 # Designed to set up macOS system dependencies and Python environments.
 
 # Ensure standard macOS and Homebrew binary paths are available
@@ -31,7 +31,7 @@ echo -e "${BLUE} | |__) |__   ___ | | _____| |_| (___ | |_ _ __ _| | ___ ${NC}"
 echo -e "${BLUE} |  ___/ _ \\ / __|| |/ / _ \\ __|\\___ \\| __| '__| | |/ / ${NC}"
 echo -e "${BLUE} | |  | (_) | (__ |   <  __/ |_ ____) | |_| |  | |   <  ${NC}"
 echo -e "${BLUE} |_|   \\___/ \\___||_|\\_\\___|\\__|_____/ \\__|_|  |_|_|\\_\\${NC}"
-echo -e "       🍎 ${BLUE}FOENIX ${NC}— ${BLUE}macOS Initializer (Homebrew)${NC} 🍎"
+echo -e "       🍎 ${BLUE}Phoenix ${NC}— ${BLUE}macOS Initializer (Homebrew)${NC} 🍎"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "🚀 Starting macOS high-performance system deployment..."
 echo -e "💻 Target OS: macOS (Apple Silicon M1/M2/M3/M4 & Intel)"
@@ -134,7 +134,7 @@ chmod +x "$PROJECT_ROOT/install.sh" 2>/dev/null || true
 chmod +x "$PROJECT_ROOT/setup.py" 2>/dev/null || true
 
 echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
-echo -e "       ✨ ${BLUE}FOENIX ${NC}— ${GREEN}macOS Deployment Complete!${NC} ✨"
+echo -e "       ✨ ${BLUE}Phoenix ${NC}— ${GREEN}macOS Deployment Complete!${NC} ✨"
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "You can now initialize the setup wizard and launch the AI on macOS."
 echo -e "To launch, run: ${YELLOW}./mac/launch.sh${NC} or ${YELLOW}python3 server.py${NC}"

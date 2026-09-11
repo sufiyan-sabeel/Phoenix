@@ -1,8 +1,8 @@
-# FOENIX Installer Script for Windows 10 / 11
+# Phoenix Installer Script for Windows 10 / 11
 # Sets up Windows Python environment, security dependencies, and workspace directories.
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.WindowTitle = "FOENIX - Windows Installer"
+$Host.UI.RawUI.WindowTitle = "Phoenix - Windows Installer"
 
 # Resolve project root directory
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -19,23 +19,17 @@ $NC     = "$ESC[0m"
 $WHITE  = "$ESC[38;5;255m"
 
 $BANNER = @'
-███████╗ ██████╗ ███╗   ██╗██╗██╗  ██╗███████╗
-██╔════╝██╔═══██╗████╗  ██║██║██║ ██╔╝██╔════╝
-█████╗  ██║   ██║██╔██╗ ██║██║█████╔╝ █████╗  
-██╔══╝  ██║   ██║██║╚██╗██║██║██╔═██╗ ██╔══╝  
-██║     ╚██████╔╝██║ ╚████║██║██║  ██╗███████╗
-╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝╚══════╝
-██████╗ ███████╗██╗  ██╗
-██╔══██╗██╔════╝██║  ██║
-██████╔╝█████╗  ███████║
-██╔══██╗██╔══╝  ██╔══██║
-██║  ██║███████╗██║  ██║
-╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+███████╗██╗  ██╗ █████╗ ██████╗  ██████╗██╗  ██╗
+██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██║ ██╔╝ 
+█████╗  ███████║███████║██████╔╝██║     █████╔╝  
+██╔══╝  ██╔══██║██╔══██║██╔══██║██║     ██╔═██╗  
+██║     ██║  ██║██║  ██║██║  ██║╚██████╗██║  ██╗ 
+╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
 '@
 
 Clear-Host
 Write-Host "${BLUE}$BANNER${NC}"
-Write-Host "       [+] ${BLUE}FOENIX ${NC}- ${BLUE}Windows Initializer${NC} [+]"
+Write-Host "       [+] ${BLUE}Phoenix ${NC}- ${BLUE}Windows Initializer${NC} [+]"
 Write-Host "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 Write-Host "Starting Windows high-performance system deployment..."
 Write-Host "Target OS: Windows 10 / Windows 11"
@@ -105,7 +99,7 @@ if ($testResult -match "OK") {
 }
 
 Write-Host "`n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
-Write-Host "       [+] ${BLUE}FOENIX ${NC}- ${GREEN}Windows Deployment Complete!${NC} [+]"
+Write-Host "       [+] ${BLUE}Phoenix ${NC}- ${GREEN}Windows Deployment Complete!${NC} [+]"
 Write-Host "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 Write-Host "You can now initialize the setup wizard and launch the AI on Windows."
 Write-Host "To launch, run: ${YELLOW}.\windows\launch.bat${NC} or ${YELLOW}$pythonCmd server.py${NC}"

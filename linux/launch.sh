@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# FOENIX Launcher Script for Linux (Debian / Ubuntu / Kali / Mint)
+# Phoenix Launcher Script for Linux (Debian / Ubuntu / Kali / Mint)
 # Shows a terminal dashboard menu to configure or start the server.
 
 # Resolve project root directory safely across bash, zsh, and sh
@@ -28,19 +28,13 @@ show_menu() {
         CONFIG_EXISTS=false
     fi
 
-    echo -e "${BLUE}██████╗  ██████╗  ██████╗██╗  ██╗███████╗████████╗${NC}"
-    echo -e "${BLUE}██╔══██╗██╔═══██╗██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝${NC}"
-    echo -e "${BLUE}██████╔╝██║   ██║██║     █████╔╝ █████╗     ██║   ${NC}"
-    echo -e "${BLUE}██╔═══╝ ██║   ██║██║     ██╔═██╗ ██╔══╝     ██║   ${NC}"
-    echo -e "${BLUE}██║     ╚██████╔╝╚██████╗██║  ██╗███████╗   ██║   ${NC}"
-    echo -e "${BLUE}╚═╝      ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝   ${NC}"
-    echo -e "${WHITE}███████╗████████╗██████╗ ██╗██╗  ██╗███████╗     █████╗ ██╗${NC}"
-    echo -e "${WHITE}██╔════╝╚══██╔══╝██╔══██╗██║██║ ██╔╝██╔════╝    ██╔══██╗██║${NC}"
-    echo -e "${WHITE}███████╗   ██║   ██████╔╝██║█████╔╝ █████╗      ███████║██║${NC}"
-    echo -e "${WHITE}╚════██║   ██║   ██╔══██╗██║██╔═██╗ ██╔══╝      ██╔══██║██║${NC}"
-    echo -e "${WHITE}███████║   ██║   ██║  ██║██║██║  ██╗███████╗    ██║  ██║██║${NC}"
-    echo -e "${WHITE}╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝    ╚═╝  ╚═╝╚═╝${NC}"
-    echo -e "       🐧 ${BLUE}FOENIX ${NC}— ${BLUE}Linux Dashboard (Debian/Ubuntu/Kali)${NC} 🐧"
+    echo -e "${BLUE}███████╗██╗  ██╗ █████╗ ██████╗  ██████╗██╗  ██╗${NC}"
+    echo -e "${BLUE}██╔════╝██║  ██║██╔══██╗██╔══██╗██╔════╝██║ ██╔╝ ${NC}"
+    echo -e "${BLUE}█████╗  ███████║███████║██████╔╝██║     █████╔╝  ${NC}"
+    echo -e "${BLUE}██╔══╝  ██╔══██║██╔══██║██╔══██║██║     ██╔═██╗  ${NC}"
+    echo -e "${BLUE}██║     ██║  ██║██║  ██║██║  ██║╚██████╗██║  ██╗ ${NC}"
+    echo -e "${BLUE}╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝${NC}"
+    echo -e "       🐧 ${BLUE}Phoenix ${NC}— ${BLUE}Linux Dashboard (Debian/Ubuntu/Kali)${NC} 🐧"
     echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     echo -e " Status: $SETUP_STATUS"
     
@@ -72,7 +66,7 @@ except Exception:
     echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
     echo -e " Please choose an option:\n"
     echo -e "  [1] Run Interactive Setup Wizard"
-    echo -e "  [2] Launch FOENIX Server & Bot"
+    echo -e "  [2] Launch Phoenix Server & Bot"
     echo -e "  [3] Exit"
     echo -e "\n${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 }
@@ -95,7 +89,7 @@ launch_server() {
         return
     fi
 
-    echo -e "\n${CYAN}Starting FOENIX Server on Linux...${NC}"
+    echo -e "\n${CYAN}Starting Phoenix Server on Linux...${NC}"
     python3 server.py
 }
 
