@@ -166,7 +166,7 @@ function initEventListeners() {
 
 // Initialize Theme from LocalStorage or default to dark
 function initTheme() {
-    const savedTheme = localStorage.getItem('foenix_theme') || 'dark';
+    const savedTheme = localStorage.getItem('phoenix_theme') || 'dark';
     if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
         setLightModeIcon();
@@ -180,10 +180,10 @@ function initTheme() {
 function toggleTheme() {
     const isLight = document.body.classList.toggle('light-mode');
     if (isLight) {
-        localStorage.setItem('foenix_theme', 'light');
+        localStorage.setItem('phoenix_theme', 'light');
         setLightModeIcon();
     } else {
-        localStorage.setItem('foenix_theme', 'dark');
+        localStorage.setItem('phoenix_theme', 'dark');
         setDarkModeIcon();
     }
 }
@@ -374,12 +374,12 @@ function sanitizeAllConversations(convList) {
 // Load conversations from LocalStorage and sync with server
 async function loadConversations() {
     // 1. Initial load from LocalStorage for instant UI render
-    const saved = localStorage.getItem('foenix_conversations');
+    const saved = localStorage.getItem('phoenix_conversations');
     if (saved) {
         try {
             conversations = JSON.parse(saved);
             sanitizeAllConversations(conversations);
-            const savedActiveId = localStorage.getItem('foenix_active_id');
+            const savedActiveId = localStorage.getItem('phoenix_active_id');
             if (savedActiveId && conversations.some(c => c.id === savedActiveId)) {
                 activeConversationId = savedActiveId;
             } else if (conversations.length > 0) {
@@ -401,7 +401,7 @@ async function loadConversations() {
                 sanitizeAllConversations(conversations);
                 
                 // Set active conversation if not set or invalid
-                const savedActiveId = localStorage.getItem('foenix_active_id');
+                const savedActiveId = localStorage.getItem('phoenix_active_id');
                 if (savedActiveId && conversations.some(c => c.id === savedActiveId)) {
                     activeConversationId = savedActiveId;
                 } else {
@@ -409,8 +409,8 @@ async function loadConversations() {
                 }
                 
                 // Save back to LocalStorage to sync
-                localStorage.setItem('foenix_conversations', JSON.stringify(conversations));
-                localStorage.setItem('foenix_active_id', activeConversationId);
+                localStorage.setItem('phoenix_conversations', JSON.stringify(conversations));
+                localStorage.setItem('phoenix_active_id', activeConversationId);
                 renderAll();
             }
         }
@@ -421,8 +421,8 @@ async function loadConversations() {
 
 // Save conversations to LocalStorage and sync to server
 async function saveConversations() {
-    localStorage.setItem('foenix_conversations', JSON.stringify(conversations));
-    localStorage.setItem('foenix_active_id', activeConversationId);
+    localStorage.setItem('phoenix_conversations', JSON.stringify(conversations));
+    localStorage.setItem('phoenix_active_id', activeConversationId);
     
     // Sync to server background file storage
     try {
@@ -1214,7 +1214,7 @@ async function pollHistoryChanges() {
                     // Update active conversation reference
                     const activeChat = conversations.find(c => c.id === activeConversationId);
                     if (activeChat) {
-                        localStorage.setItem('foenix_conversations', JSON.stringify(conversations));
+                        localStorage.setItem('phoenix_conversations', JSON.stringify(conversations));
                         renderAll();
                         scrollToBottom();
                     }

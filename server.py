@@ -5328,7 +5328,7 @@ def execute_local_tool(name, args_str):
                             init_res = stdio_conn.send_request("initialize", {
                                 "protocolVersion": "2024-11-05",
                                 "capabilities": {},
-                                "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
+                                "clientInfo": {"name": "phoenix-client", "version": "1.0.0"}
                             })
                             if "error" not in init_res:
                                 stdio_conn.send_notification("notifications/initialized")
@@ -5962,7 +5962,7 @@ def init_stdio_mcp_connections():
                     init_res = stdio_conn.send_request("initialize", {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {},
-                        "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
+                        "clientInfo": {"name": "phoenix-client", "version": "1.0.0"}
                     })
                     if "error" not in init_res:
                         stdio_conn.send_notification("notifications/initialized")
@@ -6005,7 +6005,7 @@ def query_streamable_http_tools(url, headers=None):
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
-                "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
+                "clientInfo": {"name": "phoenix-client", "version": "1.0.0"}
             },
             "id": 100
         }
@@ -6065,7 +6065,7 @@ def call_streamable_http_tool(url, tool_name, arguments, headers=None):
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
-                "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
+                "clientInfo": {"name": "phoenix-client", "version": "1.0.0"}
             },
             "id": 100
         }
@@ -6195,7 +6195,7 @@ def query_remote_mcp_tools(url, headers=None):
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
                 "clientInfo": {
-                    "name": "foenix-client",
+                    "name": "phoenix-client",
                     "version": "1.0.0"
                 }
             },
@@ -6337,7 +6337,7 @@ def call_remote_mcp_tool(base_url, tool_name, arguments, headers=None):
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
                 "clientInfo": {
-                    "name": "foenix-client",
+                    "name": "phoenix-client",
                     "version": "1.0.0"
                 }
             },
@@ -6582,7 +6582,7 @@ def add_mcp_server():
         init_res = stdio_conn.send_request("initialize", {
             "protocolVersion": "2024-11-05",
             "capabilities": {},
-            "clientInfo": {"name": "foenix-client", "version": "1.0.0"}
+            "clientInfo": {"name": "phoenix-client", "version": "1.0.0"}
         })
         if "error" in init_res:
             stdio_conn.stop()

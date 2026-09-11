@@ -72,8 +72,8 @@ mkdir -p ~/storage/shared/PocketStrike-AI || echo -e "${YELLOW}Warning: Could no
 CLONED=false
 if [ ! -f "launch.sh" ]; then
     echo -e "\n${BLUE}Cloning Phoenix repository from GitHub...${NC}"
-    git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git
-    cd PocketStrike-AI || exit 1
+    git clone https://github.com/sufiyan-sabeel/Phoenix.git
+    cd Phoenix || exit 1
     CLONED=true
 fi
 
@@ -97,7 +97,7 @@ echo -e "       ✨ ${BLUE}Phoenix ${NC}— ${GREEN}Deployed Successfully!${NC} 
 echo -e "${GREEN}──────────────────────────────────────────────────────────────────────────${NC}"
 echo -e "You can now initialize the setup wizard and launch the AI."
 if [ "$CLONED" = true ]; then
-    echo -e "To launch, run: ${YELLOW}cd PocketStrike-AI && ./launch.sh${NC}"
+    echo -e "To launch, run: ${YELLOW}cd Phoenix && ./launch.sh${NC}"
 else
     echo -e "To launch, run: ${YELLOW}./launch.sh${NC}"
 fi

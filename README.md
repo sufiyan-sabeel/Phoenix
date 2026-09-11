@@ -5,6 +5,12 @@
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" alt="License" />
 </p>
 
+# PHOENIX
+
+**PHOENIX — AI All-Rounder Assistant**
+
+Creator: Umaiz Sufiyan
+
 ## 🧠 AI Agent that gives Termux, Linux, macOS & Windows a Brain
 Phoenix is a highly optimized, fully featured **super lightweight AI agent core** designed to bridge high-level reasoning with low-level device and operating system APIs. It runs seamlessly on Android (via Termux), native Linux distributions, macOS, and Windows (10/11).
 
@@ -78,7 +84,7 @@ pkg install git
 ### Step 2: Clone and Run the Installer
 Launch Termux and run this one-line command to install all basic dependencies (Python, Git, Flask, Requests, Termux-API, Nmap, Dnsutils, Curl, Net-Tools, Iproute2, and Traceroute):
 ```bash
-git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git && cd PocketStrike-AI && sed -i 's/\r$//' install.sh && bash install.sh
+git clone https://github.com/sufiyan-sabeel/Phoenix.git && cd Phoenix && sed -i 's/\r$//' install.sh && bash install.sh
 ```
 *Note: During installation, the script will request Android Storage Permissions (`termux-setup-storage`). Tap "Allow" on the system popup.*
 
@@ -116,7 +122,7 @@ Phoenix also runs natively on standard Linux desktop and server distributions us
 ### Step 1: Run the Linux Installer (One-Liner)
 Open your terminal on Ubuntu, Debian, Kali, or Mint and run:
 ```bash
-git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git && cd PocketStrike-AI && bash linux/install.sh
+git clone https://github.com/sufiyan-sabeel/Phoenix.git && cd Phoenix && bash linux/install.sh
 ```
 
 ### Step 2: Launch the Linux Dashboard
@@ -134,7 +140,7 @@ Phoenix runs natively on macOS (macOS 12+ / Sequoia / Sonoma / Ventura) using Ho
 ### Step 1: Run the macOS Installer (One-Liner)
 Open Terminal on your Mac and run:
 ```bash
-git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git && cd PocketStrike-AI && bash mac/install.sh
+git clone https://github.com/sufiyan-sabeel/Phoenix.git && cd Phoenix && bash mac/install.sh
 ```
 
 ### Step 2: Launch the macOS Dashboard
@@ -155,8 +161,8 @@ Phoenix runs natively on Windows 10 and Windows 11 with full PowerShell integrat
 ### Step 1: Clone the Repository
 Open PowerShell or Command Prompt:
 ```powershell
-git clone https://github.com/AbuZar-Ansarii/PocketStrike-AI.git
-cd PocketStrike-AI
+git clone https://github.com/sufiyan-sabeel/Phoenix.git
+cd Phoenix
 ```
 
 ### Step 2: Run the Windows Installer
