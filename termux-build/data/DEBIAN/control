@@ -1,0 +1,12 @@
+Package: phoenix
+Version: 1.0.0
+Architecture: aarch64
+Maintainer: Umaiz Sufiyan
+Homepage: https://github.com/sufiyan-sabeel/Phoenix
+Depends: python (>= 3.8), python-flask, python-requests
+Section: science
+Priority: optional
+Description: PHOENIX — AI All-Rounder Assistant for Termux, Linux, macOS & Windows
+ PHOENIX is a lightweight AI agent with a web chat interface, ReAct function
+ calling, 76 built-in tools, MCP integration, Telegram bot support, and
+ always-on voice assistant. Runs on Termux, Linux, macOS, and Windows.

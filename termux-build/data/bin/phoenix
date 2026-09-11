@@ -1,0 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# PHOENIX — AI All-Rounder Assistant
+# Termux package entry point
+
+PHOENIX_DIR="$PREFIX/lib/phoenix"
+export PYTHONIOENCODING=utf-8
+
+exec python3 "$PHOENIX_DIR/cli.py" "$@"

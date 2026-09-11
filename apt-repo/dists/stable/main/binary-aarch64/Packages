@@ -1,0 +1,21 @@
+Package: phoenix
+Version: 1.0.0
+Architecture: aarch64
+Maintainer: Umaiz Sufiyan
+Depends: python (>= 3.8), python-flask, python-requests
+Filename: pool/phoenix_1.0.0_aarch64.deb
+Size: 94150
+MD5sum: 10973333152f16122b88df9d472026bb
+SHA1: 027c4cb3e45773e103806efb8fadb6bc7545600b
+SHA256: c425e873859ee823a13219b6f92427b83231bc4dce90f8682afbf37e62fe4191
+Section: science
+Priority: optional
+Homepage: https://github.com/sufiyan-sabeel/Phoenix
+Description: PHOENIX — AI All-Rounder Assistant for Termux, Linux, macOS & Windows
+ PHOENIX is a lightweight AI agent with a web chat interface, ReAct function
+ calling, 76 built-in tools, MCP integration, Telegram bot support, and
+ always-on voice assistant. Runs on Termux, Linux, macOS, and Windows.
+
+dpkg-scanpackages: warning: Packages in archive but missing from override file:
+dpkg-scanpackages: warning:   phoenix
+dpkg-scanpackages: info: Wrote 1 entries to output Packages file.

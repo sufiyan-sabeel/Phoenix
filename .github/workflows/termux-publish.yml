@@ -1,0 +1,84 @@
+name: Build and Publish PHOENIX Termux Package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pyproject.toml'
+      - 'phoenix_ai/**'
+      - 'termux-build/**'
+      - '.github/workflows/termux-publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build dependencies
+        run: pip install build dpkg-dev
+
+      - name: Build pip wheel
+        run: python -m build
+
+      - name: Build Termux .deb
+        run: bash termux-build/build.sh
+
+      - name: Generate APT repository metadata
+        run: |
+          mkdir -p apt-repo/pool
+          cp dist/phoenix_*.deb apt-repo/pool/
+          cd apt-repo
+          dpkg-scanpackages --multiversion pool/ /dev/null > dists/stable/main/binary-aarch64/Packages 2>/dev/null
+          gzip -k -f dists/stable/main/binary-aarch64/Packages
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: phoenix-packages
+          path: |
+            dist/phoenix_*.deb
+            dist/phoenix_cli-*.whl
+            apt-repo/**
+
+  publish-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: phoenix-packages
+          path: site
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
