@@ -1,7 +1,3 @@
-<img width="2009" height="461" alt="Phoenix" src="https://github.com/user-attachments/assets/e4121dc8-b1d6-4bbd-b678-6d4853d8a33b" />
-
-
-
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Termux%20%7C%20Android%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-green?style=for-the-badge&logo=windows" alt="Platform" />
   <img src="https://img.shields.io/badge/Language-Python%20%7C%20JS-blue?style=for-the-badge&logo=python" alt="Languages" />
