@@ -19,8 +19,8 @@ cd "$PROJECT_ROOT" || exit 1
 # Auto-activate macOS virtual environment if initialized
 if [ -d "$PROJECT_ROOT/.venv" ]; then
     source "$PROJECT_ROOT/.venv/bin/activate" 2>/dev/null || true
-elif [ -d "$HOME/PocketStrike-AI/.venv" ]; then
-    source "$HOME/PocketStrike-AI/.venv/bin/activate" 2>/dev/null || true
+elif [ -d "$HOME/PHOENIX/.venv" ]; then
+    source "$HOME/PHOENIX/.venv/bin/activate" 2>/dev/null || true
 fi
 
 # Resolve exact Python interpreter prioritizing virtual environment & Homebrew
@@ -33,8 +33,8 @@ elif [ -x "/opt/homebrew/bin/python3" ]; then
     PYTHON_BIN="/opt/homebrew/bin/python3"
 elif [ -x "/usr/local/bin/python3" ]; then
     PYTHON_BIN="/usr/local/bin/python3"
-elif [ -x "$HOME/PocketStrike-AI/.venv/bin/python3" ]; then
-    PYTHON_BIN="$HOME/PocketStrike-AI/.venv/bin/python3"
+elif [ -x "$HOME/PHOENIX/.venv/bin/python3" ]; then
+    PYTHON_BIN="$HOME/PHOENIX/.venv/bin/python3"
 elif command -v python3 &>/dev/null; then
     PYTHON_BIN="$(command -v python3)"
 fi

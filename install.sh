@@ -66,7 +66,7 @@ pkg install -y python git termux-api android-tools nmap dnsutils curl net-tools 
 # Setup storage access and create workspace directory
 echo -e "\n${BLUE}🔐 Granting local storage permissions...${NC}"
 termux-setup-storage || echo -e "${YELLOW}Warning: termux-setup-storage failed (not running on Termux?), proceeding anyway...${NC}"
-mkdir -p ~/storage/shared/PocketStrike-AI || echo -e "${YELLOW}Warning: Could not create shared storage folder, proceeding...${NC}"
+mkdir -p ~/storage/shared/PHOENIX || echo -e "${YELLOW}Warning: Could not create shared storage folder, proceeding...${NC}"
 
 # 3. Clone repository if launch.sh doesn't exist (e.g. running via curl download)
 CLONED=false

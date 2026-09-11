@@ -36,16 +36,16 @@ Additionally, it integrates a Telegram Bot backend with unified session tracking
 
 ## 🚀 Daily Quick Launch (One-Liner)
 If you already completed the setup:
-* **Android (Termux)**: `cd ~/PocketStrike-AI && bash launch.sh`
-* **Linux**: `cd ~/PocketStrike-AI && bash linux/launch.sh`
-* **macOS**: `cd ~/PocketStrike-AI && bash mac/launch.sh`
+* **Android (Termux)**: `cd ~/PHOENIX && bash launch.sh`
+* **Linux**: `cd ~/PHOENIX && bash linux/launch.sh`
+* **macOS**: `cd ~/PHOENIX && bash mac/launch.sh`
 * **Windows**: Double-click `windows\launch.bat` or run `.\windows\launch.bat` in PowerShell/CMD
 
 ---
 
 ## 📂 Project Structure
 ```text
-📂 PocketStrike-AI/
+📂 PHOENIX/
 ├── 📄 LICENSE                # Open-source MIT License terms
 ├── 📄 README.md              # Detailed documentation, guides, and tool specifications
 ├── 📱 install.sh             # Android Termux automated installer script
@@ -247,7 +247,7 @@ Phoenix is built with privacy-first principles. **Zero conversation data is leak
     *   *These files are automatically loaded and re-injected into the system prompt on every turn. At the end of every user/assistant interaction turn (in both Web UI and Telegram), a background reflection thread evaluates the conversation changes and automatically appends/updates these files in real-time inside the `agent/` subdirectory, keeping your main workspace clean and organized.*
 
 ## 🔒 Security Sandbox Guardrails
-*   **Path Enforcement**: The AI is strictly sandboxed. All write/read operations normalize path traversals (`..`) and resolve absolute real paths. If the AI tries to write or modify anything outside of `~/storage/shared/PocketStrike-AI`, the sandbox blocks it with an access denied error.
+*   **Path Enforcement**: The AI is strictly sandboxed. All write/read operations normalize path traversals (`..`) and resolve absolute real paths. If the AI tries to write or modify anything outside of `~/storage/shared/PHOENIX`, the sandbox blocks it with an access denied error.
 *   **Core Code Protection**: Overwriting or modifying critical codebase files (like `server.py`, `setup.py`, `launch.sh`, etc.) is blocked by name, keeping the AI from corrupting its own server threads.
 *   **Command Filter**: `execute_termux_command` filters and blocks dangerous destructive tokens (such as `rm -rf`, `rm -f /`, `mkfs`, `dd`) to protect the device.
 

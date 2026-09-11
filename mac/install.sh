@@ -51,9 +51,9 @@ else
 fi
 
 # Create workspace directory
-echo -e "\n${BLUE}📁 Initializing macOS workspace directory (~/PocketStrike-AI/workspace)...${NC}"
+echo -e "\n${BLUE}📁 Initializing macOS workspace directory (~/PHOENIX/workspace)...${NC}"
 mkdir -p "$PROJECT_ROOT/workspace" || true
-mkdir -p "$HOME/PocketStrike-AI/workspace" 2>/dev/null || true
+mkdir -p "$HOME/PHOENIX/workspace" 2>/dev/null || true
 
 # 4. Install Python dependencies
 echo -e "\n${BLUE}⚡ [3/4] Installing Python dependency layers...${NC}"

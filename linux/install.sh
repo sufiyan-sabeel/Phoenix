@@ -64,8 +64,8 @@ sudo apt-get install -y \
 }
 
 # Create local workspace directory
-echo -e "\n${BLUE}📁 Initializing workspace directory (~/PocketStrike-AI/workspace)...${NC}"
-mkdir -p ~/PocketStrike-AI/workspace || mkdir -p ./workspace
+echo -e "\n${BLUE}📁 Initializing workspace directory (~/PHOENIX/workspace)...${NC}"
+mkdir -p ~/PHOENIX/workspace || mkdir -p ./workspace
 
 # 4. Install Python requirements
 echo -e "\n${BLUE}⚡ [3/4] Installing Python dependency layers...${NC}"
