@@ -1,36 +1,535 @@
-<!doctype html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PHOENIX // TERMINAL FORGED — AI Coding & Automation CLI for Termux & Linux</title>
-    <meta name="description" content="PHOENIX is an open-source AI coding and automation CLI built for terminal and Android workflows." />
-    <meta property="og:title" content="PHOENIX // TERMINAL FORGED" />
-    <meta property="og:description" content="AI Coding & Automation CLI for Termux & Linux" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://sufiyan-sabeel.github.io/Phoenix/" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Redirect from 404.html SPA redirect
-      (function(l) {
-        if (l.search[1] === '/') {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-            l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location))
-    </script>
-  </body>
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PHOENIX // TERMINAL FORGED — AI Coding &amp; Automation CLI for Termux &amp; Linux</title>
+<meta name="description" content="PHOENIX is an open-source AI coding and automation CLI built for terminal and Android workflows." />
+<meta property="og:title" content="PHOENIX // TERMINAL FORGED" />
+<meta property="og:description" content="AI Coding & Automation CLI for Termux & Linux" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://sufiyan-sabeel.github.io/Phoenix/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-primary-fixed": "#351000",
+        "secondary-fixed-dim": "#ffb4a2",
+        "error": "#ffb4ab",
+        "primary-fixed-dim": "#ffb694",
+        "on-background": "#e2e2e8",
+        "surface-container-low": "#1a1c20",
+        "on-secondary-fixed-variant": "#8a1d00",
+        "inverse-primary": "#a14000",
+        "surface-tint": "#ffb694",
+        "on-secondary-container": "#560e00",
+        "tertiary-fixed-dim": "#ffb95a",
+        "secondary-fixed": "#ffdad2",
+        "tertiary-fixed": "#ffddb6",
+        "surface-dim": "#111317",
+        "on-primary-fixed-variant": "#7b2f00",
+        "on-secondary-fixed": "#3c0700",
+        "tertiary-container": "#cf8a1f",
+        "on-surface-variant": "#e2bfb0",
+        "on-primary-container": "#571f00",
+        "on-tertiary-container": "#462b00",
+        "on-secondary": "#621100",
+        "primary": "#ffb694",
+        "on-error-container": "#ffdad6",
+        "on-tertiary-fixed": "#2a1800",
+        "secondary": "#ffb4a2",
+        "on-tertiary-fixed-variant": "#643f00",
+        "primary-fixed": "#ffdbcc",
+        "surface-container-lowest": "#0c0e12",
+        "surface-container": "#1e2024",
+        "primary-container": "#ff6a00",
+        "background": "#111317",
+        "surface-container-highest": "#333539",
+        "secondary-container": "#ff562c",
+        "surface-variant": "#333539",
+        "outline": "#a98a7d",
+        "inverse-surface": "#e2e2e8",
+        "error-container": "#93000a",
+        "on-tertiary": "#462a00",
+        "outline-variant": "#5a4136",
+        "surface-container-high": "#282a2e",
+        "surface-bright": "#37393e",
+        "on-surface": "#e2e2e8",
+        "on-primary": "#571f00",
+        "surface": "#111317",
+        "tertiary": "#ffb95a",
+        "on-error": "#690005"
+      },
+      borderRadius: {
+        DEFAULT: "0.125rem",
+        lg: "0.25rem",
+        xl: "0.5rem",
+        full: "0.75rem"
+      },
+      spacing: {
+        "space-sm": "0.5rem",
+        "margin": "1.5rem",
+        "space-lg": "1.5rem",
+        "space-xl": "2.5rem",
+        "gutter": "1rem",
+        "space-md": "1rem",
+        "space-xs": "0.25rem"
+      },
+      fontFamily: {
+        "body-sm": ["Inter"],
+        "headline-md": ["Space Grotesk"],
+        "code-lg": ["JetBrains Mono"],
+        "code-sm": ["JetBrains Mono"],
+        "display-mobile": ["Space Grotesk"],
+        "headline-lg-mobile": ["Space Grotesk"],
+        "headline-sm": ["Space Grotesk"],
+        "label-caps": ["JetBrains Mono"],
+        "body-md": ["Inter"],
+        "headline-lg": ["Space Grotesk"],
+        "body-lg": ["Inter"],
+        "display": ["Space Grotesk"],
+        "code-md": ["JetBrains Mono"]
+      },
+      fontSize: {
+        "body-sm": ["12px", { lineHeight: "18px", letterSpacing: "0.01em", fontWeight: "400" }],
+        "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "code-lg": ["15px", { lineHeight: "22px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "code-sm": ["11px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }],
+        "display-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "headline-lg-mobile": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "600" }],
+        "label-caps": ["10px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "600" }],
+        "body-md": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }],
+        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }],
+        "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "400" }],
+        "display": ["48px", { lineHeight: "56px", letterSpacing: "-0.03em", fontWeight: "700" }],
+        "code-md": ["13px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }]
+      }
+    }
+  }
+}
+</script>
+<style>
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+.glow-ember {
+  box-shadow: 0 0 0 1px #ff6a00, 0 0 20px -4px rgba(255, 106, 0, 0.28);
+}
+.glow-ember-subtle {
+  box-shadow: 0 0 0 1px #333539, 0 4px 24px -2px rgba(0, 0, 0, 0.7);
+}
+.bg-grid-tech {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(51, 53, 57, 0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(51, 53, 57, 0.2) 1px, transparent 1px);
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.caret-blink {
+  animation: blink 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-surface-container-lowest min-h-screen flex flex-col">
+
+<!-- TOP NAVBAR -->
+<header class="sticky top-0 w-full z-50 bg-surface-container-lowest border-b border-surface-container-highest">
+<div class="max-w-7xl mx-auto px-space-lg flex items-center justify-between h-14">
+<div class="flex items-center gap-3">
+<a class="font-headline-sm text-headline-sm tracking-tight text-on-surface flex items-center gap-space-xs font-semibold" href="#">
+<div class="w-7 h-7 rounded-sm bg-surface-container-high border border-primary-container/40 flex items-center justify-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary-container/10"></div>
+<span class="material-symbols-outlined text-primary-container text-base">terminal</span>
+</div>
+<span class="tracking-wider">PHOENIX</span>
+</a>
+<span class="font-label-caps text-label-caps px-1.5 py-0.5 rounded-sm bg-surface-container-high text-primary border border-surface-container-highest">v0.4.2</span>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary-container border-b-2 border-primary-container pb-1 font-medium font-body-sm text-body-sm" href="#features">Features</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="#docs">Docs</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="#install">Install</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="#architecture">Roadmap</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5 font-body-sm text-body-sm" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span>GitHub</span>
+</a>
+</nav>
+<div class="flex items-center gap-space-sm">
+<div class="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-sm bg-surface-container border border-surface-container-highest text-on-surface-variant font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-sm text-primary">terminal</span>
+<span>Terminal CLI</span>
+</div>
+<a class="px-3.5 py-1.5 rounded-md bg-primary-container text-on-primary font-code-md text-code-md font-semibold hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-1 shadow-sm" href="#install">
+<span>Get Started</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</header>
+
+<!-- MAIN CANVAS -->
+<main class="flex-1 w-full bg-grid-tech">
+
+<!-- HERO SECTION -->
+<section class="max-w-[1240px] mx-auto px-space-lg pt-12 pb-16 lg:pt-20 lg:pb-24">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+<div class="lg:col-span-6 space-y-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-surface-container-high border border-surface-container-highest text-on-surface">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="font-label-caps text-label-caps tracking-wider text-primary">OPEN SOURCE &bull; AI &bull; TERMINAL &bull; ANDROID</span>
+</div>
+<h1 class="font-display text-display tracking-tight text-on-surface">
+Your AI-powered <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-red-500">terminal companion.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+Code, automate and build with PHOENIX directly from your terminal. Built for Android Termux, Linux, and remote shell environments.
+</p>
+<div class="flex flex-wrap items-center gap-space-md pt-2">
+<a class="px-5 py-3 rounded-md bg-primary-container text-surface-container-lowest font-code-lg text-code-lg font-bold flex items-center gap-2 hover:bg-orange-500 transition-all glow-ember active:scale-[0.98]" href="#install">
+<span>Install PHOENIX</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</a>
+<a class="px-5 py-3 rounded-md bg-surface-container-low border border-surface-container-highest text-on-surface font-code-lg text-code-lg font-medium hover:bg-surface-container-high transition-colors flex items-center gap-2" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span>View on GitHub</span>
+</a>
+</div>
+<div class="p-3 bg-surface-container-low border border-surface-container-highest rounded-md flex items-center justify-between font-code-sm text-code-sm text-on-surface">
+<div class="flex items-center gap-2 truncate">
+<span class="text-primary-container select-none font-bold">&#10095;</span>
+<span class="text-on-surface select-all font-mono">pkg install phoenix &amp;&amp; phoenix</span>
+</div>
+<button class="p-1.5 rounded-sm hover:bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" onclick="navigator.clipboard.writeText('pkg install phoenix && phoenix')" title="Copy command">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+<span class="font-label-caps text-label-caps hidden sm:inline">COPY</span>
+</button>
+</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant/80 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span>Architected &amp; maintained by <span class="text-on-surface font-medium">Umaiz Sufiyan</span></span>
+</div>
+</div>
+<div class="lg:col-span-6">
+<div class="w-full rounded-lg bg-surface-container-low border border-surface-container-highest overflow-hidden glow-ember-subtle">
+<div class="px-4 py-2.5 bg-surface-container border-b border-surface-container-highest flex items-center justify-between select-none">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-error-container/60 border border-error/40"></span>
+<span class="w-3 h-3 rounded-full bg-tertiary-container/60 border border-tertiary/40"></span>
+<span class="w-3 h-3 rounded-full bg-emerald-500/60 border border-emerald-400/40"></span>
+<span class="ml-2 font-code-sm text-code-sm text-on-surface-variant font-medium">PHOENIX CLI &bull; session_01</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps px-1.5 py-0.5 rounded-sm bg-surface-container-lowest text-emerald-400 border border-surface-container-highest">PID: 4921</span>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">splitscreen</span>
+</div>
+</div>
+<div class="p-5 font-code-md text-code-md leading-relaxed text-on-surface overflow-x-auto space-y-2 bg-surface-container-lowest">
+<div class="text-on-surface-variant flex items-center gap-2">
+<span class="text-primary-container font-bold">&#10095;</span>
+<span class="text-on-surface">phoenix</span>
+</div>
+<div class="text-primary font-bold tracking-tight">PHOENIX CLI v0.4.2 [Termux aarch64]</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-y-0.5 pt-1 text-on-surface-variant text-xs">
+<div><span class="text-on-surface-variant/70">Provider:</span> <span class="text-on-surface">OpenRouter (DeepSeek / Claude)</span></div>
+<div><span class="text-on-surface-variant/70">Model:</span> <span class="text-on-surface">openrouter/free-tier</span></div>
+<div><span class="text-on-surface-variant/70">Status:</span> <span class="text-emerald-400">&#9679; Ready (latency: 24ms)</span></div>
+<div><span class="text-on-surface-variant/70">Workspace:</span> <span class="text-on-surface">~/projects/phoenix-core</span></div>
+</div>
+<div class="pt-3 border-t border-surface-container-highest/60 space-y-1">
+<div class="text-tertiary flex items-center gap-1.5"><span class="text-primary-container">&#10095;</span> Ask PHOENIX anything...</div>
+<div class="text-on-surface-variant flex items-center gap-1.5"><span class="text-primary-container">&#10095;</span> Running automated diagnostics...</div>
+<div class="text-emerald-400 flex items-center gap-1.5"><span>&#10004;</span> Termux API hooks verified</div>
+<div class="text-emerald-400 flex items-center gap-1.5"><span>&#10004;</span> Android ADB bridge detected (Device: Pixel 8 Pro)</div>
+<div class="text-emerald-400 flex items-center gap-1.5"><span>&#10004;</span> Context memory indexed (14 files, 4.2k tokens)</div>
+</div>
+<div class="pt-3 flex items-center gap-1 text-on-surface font-semibold">
+<span class="text-primary-container">&#10095;</span>
+<span>Ready for command.</span>
+<span class="inline-block w-2.5 h-4 bg-primary-container caret-blink ml-1"></span>
+</div>
+</div>
+<div class="px-4 py-1.5 bg-surface-container border-t border-surface-container-highest flex items-center justify-between text-xs font-code-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online</span>
+<span>UTF-8 &bull; aarch64</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- TRUST BAR -->
+<section class="border-y border-surface-container-highest bg-surface-container-lowest">
+<div class="max-w-[1240px] mx-auto px-space-lg py-4">
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-y sm:divide-y-0 sm:divide-x divide-surface-container-highest text-center">
+<div class="py-2 sm:py-0 px-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-caps text-label-caps"><span class="material-symbols-outlined text-primary text-base">verified</span><span>OPEN SOURCE (MIT)</span></div>
+<div class="py-2 sm:py-0 px-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-caps text-label-caps"><span class="material-symbols-outlined text-primary text-base">phone_android</span><span>TERMUX READY</span></div>
+<div class="py-2 sm:py-0 px-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-caps text-label-caps"><span class="material-symbols-outlined text-primary text-base">hub</span><span>MULTI-PROVIDER AI</span></div>
+<div class="py-2 sm:py-0 px-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-caps text-label-caps"><span class="material-symbols-outlined text-primary text-base">terminal</span><span>CLI FIRST</span></div>
+<div class="py-2 sm:py-0 px-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-caps text-label-caps"><span class="material-symbols-outlined text-primary text-base">devices</span><span>ANDROID &amp; LINUX</span></div>
+<div class="py-2 sm:py-0 px-3 flex items-center justify-center gap-2 text-on-surface-variant font-label-caps text-label-caps"><span class="material-symbols-outlined text-primary text-base">memory</span><span>LOCAL CONTEXT MEMORY</span></div>
+</div>
+</div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="max-w-[1240px] mx-auto px-space-lg py-space-xl" id="features">
+<div class="mb-10">
+<div class="font-label-caps text-label-caps text-primary tracking-widest uppercase mb-1">01 / CAPABILITIES</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">One CLI. Multiple workflows.</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low border border-surface-container-highest rounded-lg p-6 flex flex-col justify-between hover:border-primary-container/40 transition-all group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-xl">code</span></div>
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container-high text-primary border border-surface-container-highest">01 / CODE</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">AI Coding Agent</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">AI-assisted coding workflows, diff inspection, and patch generation directly from your terminal. Autonomously navigates codebases and reviews syntax.</p>
+</div>
+<div class="p-3 bg-surface-container-lowest rounded-md border border-surface-container-highest font-code-sm text-code-sm text-on-surface-variant"><span class="text-primary font-bold">phoenix code</span> --diff ./src</div>
+</div>
+<div class="bg-surface-container-low border border-surface-container-highest rounded-lg p-6 flex flex-col justify-between hover:border-primary-container/40 transition-all group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-xl">smartphone</span></div>
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container-high text-primary border border-surface-container-highest">02 / ANDROID</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Android &amp; Termux Control</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Android automation capabilities through supported ADB workflows, Termux native intents, and direct sensor/notification API integrations.</p>
+</div>
+<div class="p-3 bg-surface-container-lowest rounded-md border border-surface-container-highest font-code-sm text-code-sm text-on-surface-variant"><span class="text-primary font-bold">phoenix adb</span> --tap-record app.flow</div>
+</div>
+<div class="bg-surface-container-low border border-surface-container-highest rounded-lg p-6 flex flex-col justify-between hover:border-primary-container/40 transition-all group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<div class="w-10 h-10 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-xl">terminal</span></div>
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container-high text-primary border border-surface-container-highest">03 / SHELL</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Terminal Intelligence</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">AI-powered command synthesis, syntax error auto-correction, and execution pipeline safety checks to guard against destructive scripts.</p>
+</div>
+<div class="p-3 bg-surface-container-lowest rounded-md border border-surface-container-highest font-code-sm text-code-sm text-on-surface-variant"><span class="text-primary font-bold">phoenix shell</span> "compress all pngs"</div>
+</div>
+</div>
+</section>
+
+<!-- INSTALLATION -->
+<section class="max-w-[1240px] mx-auto px-space-lg py-12" id="install">
+<div class="bg-surface-container-low border border-surface-container-highest rounded-xl p-8 lg:p-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<div class="lg:col-span-5 space-y-4">
+<span class="font-label-caps text-label-caps text-primary tracking-wider uppercase">02 / PORTABILITY FIRST</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Serious AI tooling. <br/>In your pocket.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Built around terminal-first workflows for developers using Termux and Android without compromising desktop performance. Execute agents, trigger automations, and query LLMs with pure hardware efficiency.</p>
+<div class="space-y-2 pt-2">
+<div class="flex items-center gap-2 font-code-sm text-code-sm text-on-surface"><span class="material-symbols-outlined text-emerald-400 text-sm">check_circle</span><span>Zero bloated dependencies (Pure Python 3.10+ / Rust Core)</span></div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm text-on-surface"><span class="material-symbols-outlined text-emerald-400 text-sm">check_circle</span><span>ARM64 / aarch64 native SIMD acceleration</span></div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm text-on-surface"><span class="material-symbols-outlined text-emerald-400 text-sm">check_circle</span><span>Works offline with local quant models via Ollama</span></div>
+</div>
+</div>
+<div class="lg:col-span-7">
+<div class="bg-surface-container-lowest border border-surface-container-highest rounded-lg overflow-hidden">
+<div class="flex border-b border-surface-container-highest bg-surface-container">
+<button class="px-4 py-2.5 font-code-sm text-code-sm font-semibold border-b-2 border-primary-container text-primary bg-surface-container-lowest">Termux (pkg)</button>
+<button class="px-4 py-2.5 font-code-sm text-code-sm text-on-surface-variant hover:text-on-surface border-b-2 border-transparent">PyPI (pip)</button>
+<button class="px-4 py-2.5 font-code-sm text-code-sm text-on-surface-variant hover:text-on-surface border-b-2 border-transparent">Build from Source</button>
+</div>
+<div class="p-5 font-code-md text-code-md space-y-3">
+<div class="text-on-surface-variant/80 font-code-sm text-code-sm"># Update package repos and install directly</div>
+<div class="p-3 bg-surface-container-low rounded border border-surface-container-highest flex items-center justify-between text-on-surface">
+<code>pkg update &amp;&amp; pkg install phoenix-cli</code>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+</div>
+<div class="text-on-surface-variant/80 font-code-sm text-code-sm pt-2"># Initialize configuration and set up API provider</div>
+<div class="p-3 bg-surface-container-low rounded border border-surface-container-highest flex items-center justify-between text-on-surface">
+<code>phoenix init --quickstart</code>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+</div>
+<div class="flex items-center justify-between pt-2 text-xs font-code-sm text-on-surface-variant">
+<span class="flex items-center gap-1.5 text-emerald-400"><span class="material-symbols-outlined text-xs">verified</span> Tested on Termux Android 12/13/14</span>
+<span>SHA256: 9e3b...f12a</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FEATURE MATRIX -->
+<section class="max-w-[1240px] mx-auto px-space-lg py-12">
+<div class="mb-8">
+<div class="font-label-caps text-label-caps text-primary tracking-wider uppercase mb-1">SPECIFICATIONS</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Built around the terminal.</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">AI Coding Agent</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">AVAILABLE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Full project tree reading, patch generation, and git commit integration.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Multi-Provider AI</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">AVAILABLE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Seamless support for OpenRouter, Groq, Anthropic, and local Ollama nodes.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Terminal Assistant</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">AVAILABLE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Natural language to bash translation with pipe safety inspections.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Android / ADB Bridge</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">AVAILABLE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Direct shell-level hardware control, screenshot capture, and touch inputs.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Shell Automation</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">AVAILABLE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Declarative task sequences with retry logic and telemetry logging.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Custom Extensions</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-primary-container/10 text-primary border border-primary-container/20">IN DEV</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Write custom plugins in Lua or Python to extend PHOENIX capabilities.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Persistent Memory</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-primary-container/10 text-primary border border-primary-container/20">IN DEV</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Embedded sqlite-vec vector store for long-term project comprehension.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Terminal Vision</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container-highest text-on-surface-variant">PLANNED</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Direct terminal render of image outputs and UI screenshot debugging.</p></div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-surface-container-highest flex flex-col justify-between"><div class="flex items-center justify-between mb-2"><span class="font-headline-sm text-headline-sm text-on-surface">Voice Mode</span><span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container-highest text-on-surface-variant">PLANNED</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Hands-free terminal command dispatch via low-latency Whisper models.</p></div>
+</div>
+</section>
+
+<!-- CLI SHOWCASE -->
+<section class="max-w-[1240px] mx-auto px-space-lg py-12">
+<div class="w-full rounded-xl bg-surface-container-lowest border border-surface-container-highest overflow-hidden glow-ember-subtle">
+<div class="px-4 py-3 bg-surface-container border-b border-surface-container-highest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest"></span>
+<span class="ml-2 font-code-sm text-code-sm text-on-surface">phoenix-session // automated-refactor-daemon</span>
+</div>
+<span class="font-label-caps text-label-caps text-primary">BUFFER: STREAMING</span>
+</div>
+<div class="p-6 font-code-md text-code-md leading-relaxed space-y-3 bg-surface-container-lowest">
+<div class="text-on-surface-variant"><span class="text-primary-container font-bold">phoenix</span> run --agent refactor --target ./services/android_bridge.py</div>
+<div class="text-on-surface">[PHOENIX v0.4.2] Loading abstract syntax tree...</div>
+<div class="text-on-surface-variant pl-4 border-l-2 border-primary-container/40 space-y-1">
+<p>&#10095; Scanning project... Reading AST... 18 modules verified.</p>
+<p class="text-tertiary">&#10095; Inspecting <code class="text-on-surface bg-surface-container px-1 py-0.5 rounded">android_bridge.py: line 42</code></p>
+<p class="text-emerald-400">&#10004; Found potential memory leak in unbounded socket handler thread.</p>
+<p>&#10095; Applying non-blocking asynchronous event loop patch...</p>
+</div>
+<div class="mt-4 rounded border border-surface-container-highest overflow-hidden font-code-sm text-code-sm">
+<div class="bg-surface-container px-3 py-1.5 border-b border-surface-container-highest text-on-surface-variant flex justify-between"><span>DIFF: services/android_bridge.py</span><span class="text-emerald-400">+4 lines / -2 lines</span></div>
+<div class="bg-surface-container-lowest p-3 space-y-1">
+<div class="text-red-400 bg-red-950/20 px-2 py-0.5 rounded">- while self.is_connected: thread.sleep(100)</div>
+<div class="text-emerald-400 bg-emerald-950/20 px-2 py-0.5 rounded">+ async with asyncio.timeout(30):</div>
+<div class="text-emerald-400 bg-emerald-950/20 px-2 py-0.5 rounded">+     await self.event_stream.read_message()</div>
+</div>
+</div>
+<div class="text-on-surface flex items-center gap-2 pt-2"><span class="text-emerald-400 font-bold">&#10004;</span><span>Refactor validated against test suite. Commit created: <code class="text-primary font-mono">c84a2f1</code></span></div>
+</div>
+</div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="max-w-[1240px] mx-auto px-space-lg py-12" id="architecture">
+<div class="mb-8">
+<div class="font-label-caps text-label-caps text-primary tracking-wider uppercase mb-1">03 / ARCHITECTURE</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Decoupled. Extensible. Lightweight.</h2>
+</div>
+<div class="bg-surface-container-low border border-surface-container-highest rounded-xl p-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+<div class="space-y-3">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">UPSTREAM AI PROVIDERS</div>
+<div class="p-3 bg-surface-container rounded border border-surface-container-highest flex items-center justify-between"><span class="font-code-sm text-code-sm text-on-surface">OpenRouter (Multi-Model)</span><span class="w-2 h-2 rounded-full bg-emerald-400"></span></div>
+<div class="p-3 bg-surface-container rounded border border-surface-container-highest flex items-center justify-between"><span class="font-code-sm text-code-sm text-on-surface">Groq (Ultra-low Latency)</span><span class="w-2 h-2 rounded-full bg-emerald-400"></span></div>
+<div class="p-3 bg-surface-container rounded border border-surface-container-highest flex items-center justify-between"><span class="font-code-sm text-code-sm text-on-surface">Ollama (Local Offline LLM)</span><span class="w-2 h-2 rounded-full bg-primary-container"></span></div>
+</div>
+<div class="flex flex-col items-center justify-center p-6 bg-surface-container-lowest border-2 border-primary-container rounded-lg glow-ember text-center">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 border border-primary flex items-center justify-center text-primary-container mb-3"><span class="material-symbols-outlined text-2xl">memory</span></div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">PHOENIX CORE</h3>
+<p class="font-code-sm text-code-sm text-primary mb-2">v0.4.2 [Rust / Python]</p>
+<div class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">Dispatches prompts, formats context trees, manages sandboxed executions, and monitors latency.</div>
+</div>
+<div class="space-y-3">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">SUBSYSTEM EXECUTION</div>
+<div class="p-3 bg-surface-container rounded border border-surface-container-highest flex items-center gap-2"><span class="material-symbols-outlined text-sm text-primary">terminal</span><span class="font-code-sm text-code-sm text-on-surface">Terminal Engine &amp; PTY</span></div>
+<div class="p-3 bg-surface-container rounded border border-surface-container-highest flex items-center gap-2"><span class="material-symbols-outlined text-sm text-primary">smartphone</span><span class="font-code-sm text-code-sm text-on-surface">Android ADB &amp; Termux API</span></div>
+<div class="p-3 bg-surface-container rounded border border-surface-container-highest flex items-center gap-2"><span class="material-symbols-outlined text-sm text-primary">extension</span><span class="font-code-sm text-code-sm text-on-surface">Extension Sandbox (Lua)</span></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- DOCS + ROADMAP -->
+<section class="max-w-[1240px] mx-auto px-space-lg py-12" id="docs">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-7 bg-surface-container-low border border-surface-container-highest rounded-xl p-6">
+<div class="flex items-center justify-between border-b border-surface-container-highest pb-4 mb-6">
+<div><span class="font-label-caps text-label-caps text-primary uppercase">DOCUMENTATION</span><h3 class="font-headline-md text-headline-md text-on-surface">Quickstart Guide</h3></div>
+<a class="font-code-sm text-code-sm text-primary hover:underline flex items-center gap-1" href="#"><span>Full Manual</span><span class="material-symbols-outlined text-xs">open_in_new</span></a>
+</div>
+<div class="space-y-4 font-body-sm text-body-sm text-on-surface-variant">
+<p>1. Export your API token in your environment or let PHOENIX manage your secrets securely via keychain:</p>
+<div class="p-3 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface"><code>export OPENROUTER_API_KEY="sk-or-v1-..."</code></div>
+<p>2. Execute an interactive prompt or pipe command outputs directly into the reasoning engine:</p>
+<div class="p-3 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface"><code>git status | phoenix "summarize changes and suggest commit title"</code></div>
+<p>3. Generate executable shell scripts safely:</p>
+<div class="p-3 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface"><code>phoenix make-script "backup docker volumes daily at 2am"</code></div>
+</div>
+</div>
+<div class="lg:col-span-5 bg-surface-container-low border border-surface-container-highest rounded-xl p-6">
+<div class="border-b border-surface-container-highest pb-4 mb-6"><span class="font-label-caps text-label-caps text-primary uppercase">DEVELOPMENT CADENCE</span><h3 class="font-headline-md text-headline-md text-on-surface">Project Roadmap</h3></div>
+<div class="space-y-6">
+<div class="relative pl-6 border-l border-emerald-500/40"><span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-emerald-400"></span><div class="flex items-center gap-2"><span class="font-headline-sm text-headline-sm text-on-surface">v0.4.0 (Shipped)</span><span class="font-label-caps text-label-caps text-emerald-400">RELEASED</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Initial open-source release, Termux package build, OpenRouter integration.</p></div>
+<div class="relative pl-6 border-l border-primary-container"><span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-primary-container animate-pulse"></span><div class="flex items-center gap-2"><span class="font-headline-sm text-headline-sm text-on-surface">v0.5.0 (Current)</span><span class="font-label-caps text-label-caps text-primary">IN PROGRESS</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Local vector memory, custom tool hooks, and multi-file code editing agent.</p></div>
+<div class="relative pl-6 border-l border-surface-container-highest"><span class="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-surface-container-highest"></span><div class="flex items-center gap-2"><span class="font-headline-sm text-headline-sm text-on-surface">v0.6.0+ (Next)</span><span class="font-label-caps text-label-caps text-on-surface-variant">PLANNING</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Terminal Vision renderer, direct WebRTC audio link, and plugin marketplace.</p></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="max-w-[1240px] mx-auto px-space-lg py-16 text-center">
+<div class="max-w-2xl mx-auto space-y-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-surface-container-high border border-surface-container-highest text-on-surface"><span class="material-symbols-outlined text-primary text-sm">favorite</span><span class="font-label-caps text-label-caps text-on-surface">BUILT IN THE OPEN &bull; MIT LICENSED</span></div>
+<h2 class="font-display text-display text-on-surface tracking-tight">Ready to ignite your terminal?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Free, fully open source, and built for hackers who live in the CLI. Join the community and install PHOENIX in seconds.</p>
+<div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+<a class="px-6 py-3 rounded-md bg-primary-container text-surface-container-lowest font-code-lg text-code-lg font-bold flex items-center gap-2 hover:bg-orange-500 transition-all glow-ember active:scale-[0.98]" href="#install"><span>Install PHOENIX</span><span class="material-symbols-outlined text-base">arrow_forward</span></a>
+<a class="px-6 py-3 rounded-md bg-surface-container-low border border-surface-container-highest text-on-surface font-code-lg text-code-lg font-medium hover:bg-surface-container-high transition-colors flex items-center gap-2" href="#docs"><span class="material-symbols-outlined text-base">menu_book</span><span>Read Documentation</span></a>
+</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant pt-4">Architected &amp; maintained by <a class="text-primary hover:underline font-semibold" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">Umaiz Sufiyan</a> &amp; open source contributors.</div>
+</div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="w-full bg-surface-container-lowest border-t border-surface-container-highest">
+<div class="max-w-7xl mx-auto px-space-lg py-space-xl flex flex-col md:flex-row justify-between items-center gap-space-md">
+<div class="space-y-1 text-center md:text-left">
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center justify-center md:justify-start gap-2"><span class="material-symbols-outlined text-primary-container">terminal</span><span>PHOENIX</span></div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">&copy; 2026 PHOENIX by Umaiz Sufiyan. MIT Licensed. System Telemetry Active.</p>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-6 font-label-caps text-label-caps text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#docs">Documentation</a>
+<a class="hover:text-primary transition-colors" href="#roadmap">Changelog</a>
+<a class="hover:text-primary transition-colors" href="#install">Termux Guide</a>
+<a class="hover:text-primary transition-colors" href="#architecture">Architecture</a>
+<a class="hover:text-primary transition-colors" href="#">Security</a>
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span>GitHub</span>
+</a>
+</div>
+</div>
+</footer>
+
+</body>
 </html>
