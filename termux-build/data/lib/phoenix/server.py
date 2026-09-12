@@ -6,7 +6,7 @@ import sys
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 _candidate_site_dirs = [
     os.path.join(_script_dir, ".venv"),
-    os.path.join(os.path.expanduser("~"), "PocketStrike-AI", ".venv"),
+    os.path.join(os.path.expanduser("~"), "Phoenix", ".venv"),
 ]
 # Inject venv site-packages into sys.path
 for _v in _candidate_site_dirs:
@@ -143,9 +143,9 @@ def get_termux_package_id():
 # Define Android Internal Storage Workspace Folder
 def get_android_workspace():
     paths = [
-        os.path.expanduser("~/storage/shared/PocketStrike-AI"),
-        "/sdcard/PocketStrike-AI",
-        "/storage/emulated/0/PocketStrike-AI"
+        os.path.expanduser("~/storage/shared/Phoenix"),
+        "/sdcard/Phoenix",
+        "/storage/emulated/0/Phoenix"
     ]
     for p in paths:
         try:

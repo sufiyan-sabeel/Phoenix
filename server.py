@@ -6,7 +6,7 @@ import sys
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 _candidate_site_dirs = [
     os.path.join(_script_dir, ".venv"),
-    os.path.join(os.path.expanduser("~"), "PocketStrike-AI", ".venv"),
+    os.path.join(os.path.expanduser("~"), "Phoenix", ".venv"),
 ]
 # Inject venv site-packages into sys.path
 for _v in _candidate_site_dirs:
@@ -101,7 +101,7 @@ if sys.platform == "win32":
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # Global variables
-CONFIG_FILE = "config.json"
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
 config = {}
 telegram_bot_thread = None
 
@@ -143,9 +143,9 @@ def get_termux_package_id():
 # Define Android Internal Storage Workspace Folder
 def get_android_workspace():
     paths = [
-        os.path.expanduser("~/storage/shared/PocketStrike-AI"),
-        "/sdcard/PocketStrike-AI",
-        "/storage/emulated/0/PocketStrike-AI"
+        os.path.expanduser("~/storage/shared/Phoenix"),
+        "/sdcard/Phoenix",
+        "/storage/emulated/0/Phoenix"
     ]
     for p in paths:
         try:
@@ -2774,111 +2774,14 @@ def run_adb_command(cmd_str):
         import subprocess
         import shutil
         import os
-        import glob
         import shlex
-        
-        # Check if rish (Shizuku's Termux shell interface) is installed and available
-        rish_path = shutil.which("rish")
-        
-        # Auto-install Shizuku client files if found in the user's exported /sdcard/Shizuku/ directory
-        if rish_path is None:
-            possible_srcs = [
-                "/sdcard/Shizuku/rish",
-                "/storage/emulated/0/Shizuku/rish",
-                os.path.expanduser("~/storage/shared/Shizuku/rish"),
-                os.path.expanduser("~/storage/downloads/rish"),
-                os.path.expanduser("~/storage/downloads/Shizuku/rish"),
-                "/sdcard/Download/rish",
-                "/sdcard/Download/Shizuku/rish",
-                "/storage/emulated/0/Download/rish",
-                "/storage/emulated/0/Download/Shizuku/rish",
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "rish")),
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "workspace", "rish"))
-            ]
-            
-            shizuku_src = None
-            for path in possible_srcs:
-                if os.path.exists(path):
-                    shizuku_src = path
-                    break
-                
-            if shizuku_src:
-                try:
-                    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
-                    termux_bin = os.path.join(prefix, "bin")
-                    if os.path.exists(termux_bin):
-                        # Copy all files matching rish* (including dex loader)
-                        src_dir = os.path.dirname(shizuku_src)
-                        for fpath in glob.glob(os.path.join(src_dir, "rish*")):
-                            dest_file = os.path.join(termux_bin, os.path.basename(fpath))
-                            shutil.copy(fpath, dest_file)
-                            
-                        # Grant execution permissions
-                        os.chmod(os.path.join(termux_bin, "rish"), 0o755)
-                        
-                        # dex loader MUST be read-only (chmod 444) for Shizuku security
-                        dex_file = os.path.join(termux_bin, "rish_shizuku.dex")
-                        if os.path.exists(dex_file):
-                            os.chmod(dex_file, 0o444)
-                            
-                        rish_path = os.path.join(termux_bin, "rish")
-                        print(f"Phoenix: Auto-installed Shizuku rish binaries successfully to {termux_bin}!")
-                except Exception as e:
-                    print(f"Phoenix: Shizuku auto-install failed: {e}")
-                    
-        use_shizuku = rish_path is not None
-        shizuku_err = None
+
+        adb_path = shutil.which("adb")
+        if not adb_path:
+            return False, "ADB not found. Install Android platform-tools and ensure 'adb' is in your PATH."
+
         adb_err = None
 
-        env = os.environ.copy()
-        env["RISH_APPLICATION_ID"] = get_termux_package_id()
-        env.pop("LD_LIBRARY_PATH", None)
-        env.pop("LD_PRELOAD", None)
-        shell_exe = "/system/bin/sh" if os.path.exists("/system/bin/sh") else "sh"
-
-        # --- 1. TRY SHIZUKU FIRST IF AVAILABLE ---
-        if use_shizuku:
-            try:
-                if cmd_str.startswith("shell "):
-                    shell_cmd = cmd_str[6:] # Strip "shell "
-                    
-                    if shell_cmd == "screencap -p":
-                        return True, "STDOUT_STREAMING_ACTIVE"
-                        
-                    res = subprocess.run([shell_exe, rish_path, "-c", shell_cmd], capture_output=True, text=True, timeout=15, env=env)
-                    if res.returncode == 0:
-                        return True, res.stdout
-                    else:
-                        shizuku_err = f"Shizuku shell cmd failed (code {res.returncode}): {res.stderr.strip() or res.stdout.strip()}"
-                
-                elif cmd_str.startswith("devices"):
-                    # Check if Shizuku daemon is running and responds
-                    res = subprocess.run([shell_exe, rish_path, "-c", "echo 1"], capture_output=True, text=True, timeout=3, env=env)
-                    if res.returncode == 0:
-                        return True, "List of devices attached\nshizuku_localhost\tdevice"
-                    else:
-                        shizuku_err = f"Shizuku test failed: {res.stderr.strip() or res.stdout.strip()}"
-                
-                elif cmd_str.startswith("pull "):
-                    parts = cmd_str.split(maxsplit=2)
-                    if len(parts) >= 3:
-                        src = parts[1]
-                        dest = parts[2]
-                        try:
-                            with open(dest, "wb") as f:
-                                res = subprocess.run([shell_exe, rish_path, "-c", f"cat {src}"], stdout=f, env=env, timeout=15)
-                            if res.returncode == 0:
-                                return True, "Pulled via Shizuku shell cat"
-                            else:
-                                shizuku_err = f"Shizuku cat failed (code {res.returncode})"
-                        except Exception as e:
-                            shizuku_err = f"Shizuku pull exception: {e}"
-                    else:
-                        shizuku_err = "Invalid pull command parameters"
-            except Exception as e:
-                shizuku_err = f"Shizuku exception: {str(e)}"
-
-        # --- 2. TRY ADB FALLBACK IF SHIZUKU FAILED OR NOT AVAILABLE ---
         try:
             if cmd_str.startswith("shell "):
                 shell_cmd = cmd_str[6:]
@@ -2896,21 +2799,23 @@ def run_adb_command(cmd_str):
             if res.returncode == 0:
                 return True, res.stdout
             else:
-                adb_err = f"ADB cmd failed (code {res.returncode}): {res.stderr.strip() or res.stdout.strip()}"
+                stderr = res.stderr.strip() or res.stdout.strip()
+                if "no devices" in stderr or "no device attached" in stderr:
+                    adb_err = "No Android device connected. Enable USB Debugging or Wireless Debugging and connect."
+                elif "unauthorized" in stderr:
+                    adb_err = "Device unauthorized. Check your phone for an USB debugging authorization popup and tap 'Allow'."
+                elif "offline" in stderr:
+                    adb_err = "Device is offline. Reconnect USB cable or re-run 'adb connect <ip>:<port>'."
+                else:
+                    adb_err = f"ADB cmd failed (code {res.returncode}): {stderr}"
+        except FileNotFoundError:
+            adb_err = "ADB executable not found. Install Android platform-tools."
+        except subprocess.TimeoutExpired:
+            adb_err = "ADB command timed out after 15 seconds."
         except Exception as e:
             adb_err = f"ADB exception: {str(e)}"
 
-        # --- 3. BOTH FAILED: COMPILE DIAGNOSTIC ERROR MESSAGE ---
-        errors = []
-        if shizuku_err:
-            errors.append(f"[Shizuku] {shizuku_err}")
-        if adb_err:
-            errors.append(f"[ADB Fallback] {adb_err}")
-        
-        if not errors:
-            errors.append("No execution methods succeeded (Shizuku not configured, ADB not found/connected).")
-            
-        return False, "\n".join(errors)
+        return False, adb_err
     except Exception as e:
         return False, str(e)
 
@@ -2921,42 +2826,18 @@ def take_screenshot():
     if os.path.exists(target_path):
         try: os.remove(target_path)
         except Exception: pass
-        
-    # Check if Shizuku is set up
-    import shutil
-    use_shizuku = shutil.which("rish") is not None or os.path.exists("/sdcard/Shizuku/rish") or os.path.exists(os.path.expanduser("~/storage/shared/Shizuku/rish"))
-    
-    if use_shizuku:
-        # Trigger auto-provisioning
-        run_adb_command("devices")
-        rish_path = shutil.which("rish") or "/data/data/com.termux/files/usr/bin/rish"
-        
-        env = os.environ.copy()
-        env["RISH_APPLICATION_ID"] = get_termux_package_id()
-        env.pop("LD_LIBRARY_PATH", None)
-        env.pop("LD_PRELOAD", None)
-        shell_exe = "/system/bin/sh" if os.path.exists("/system/bin/sh") else "sh"
-        
-        try:
-            with open(target_path, "wb") as f:
-                res = subprocess.run([shell_exe, rish_path, "-c", "screencap -p"], stdout=f, env=env, timeout=20)
-            if res.returncode == 0 and os.path.exists(target_path) and os.path.getsize(target_path) > 0:
-                return f"Success: Screenshot captured via Shizuku. Saved to workspace as '{target_name}'. Path: {target_path}."
-        except Exception as e:
-            # Fallback to standard ADB below if rish failed
-            pass
-            
-    # Verify standard ADB connection state fallback
+
+    # Verify ADB connection state
     ok, out = run_adb_command("devices")
-    if not ok or len([line for line in out.strip().split("\n") if "device" in line and not "devices" in line]) == 0:
-        return "Error: Neither Shizuku nor Local ADB is connected. Enable 'Wireless Debugging' in Android Developer Options, connect Termux locally (e.g. run 'adb connect localhost:5555' or authorize Shizuku via rish), and try again."
+    if not ok or len([line for line in out.strip().split("\n") if "device" in line and "devices" not in line]) == 0:
+        return "Error: ADB is not connected. Enable USB Debugging or Wireless Debugging in Android Developer Options, connect your device, and try again."
         
-    # 2. Capture screenshot on phone storage
+    # Capture screenshot on phone storage
     ok, out = run_adb_command("shell screencap -p /sdcard/screenshot.png")
     if not ok:
         return f"Error: Screen capture command failed. Details: {out}"
         
-    # 3. Pull photo from device storage to Termux workspace
+    # Pull photo from device storage to workspace
     ok, out = run_adb_command(f"pull /sdcard/screenshot.png {target_path}")
     if not ok:
         return f"Error: Failed to transfer screenshot to workspace. Details: {out}"
@@ -7085,119 +6966,42 @@ if __name__ == '__main__':
         telegram_bot_thread.start()
         telegram_status = "Active"
 
-    # 3. Check Shizuku status dynamically
+    # 3. Check ADB device connection status
     import shutil
-    shizuku_provisioned = shutil.which("rish") is not None
-    shizuku_status = "Not Connected"
-    
-    # Auto-provision on startup if not in PATH but files exist
-    if not shizuku_provisioned:
-        possible_srcs = [
-            "/sdcard/Shizuku/rish",
-            "/storage/emulated/0/Shizuku/rish",
-            os.path.expanduser("~/storage/shared/Shizuku/rish"),
-            os.path.expanduser("~/storage/downloads/rish"),
-            os.path.expanduser("~/storage/downloads/Shizuku/rish"),
-            "/sdcard/Download/rish",
-            "/sdcard/Download/Shizuku/rish",
-            "/storage/emulated/0/Download/rish",
-            "/storage/emulated/0/Download/Shizuku/rish",
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "rish")),
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "workspace", "rish"))
-        ]
-        shizuku_src = None
-        for path in possible_srcs:
-            if os.path.exists(path):
-                shizuku_src = path
-                break
-        if shizuku_src:
-            try:
-                prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
-                termux_bin = os.path.join(prefix, "bin")
-                if os.path.exists(termux_bin):
-                    import glob
-                    src_dir = os.path.dirname(shizuku_src)
-                    for fpath in glob.glob(os.path.join(src_dir, "rish*")):
-                        dest_file = os.path.join(termux_bin, os.path.basename(fpath))
-                        shutil.copy(fpath, dest_file)
-                    os.chmod(os.path.join(termux_bin, "rish"), 0o755)
-                    dex_file = os.path.join(termux_bin, "rish_shizuku.dex")
-                    if os.path.exists(dex_file):
-                        os.chmod(dex_file, 0o444)
-                    shizuku_provisioned = True
-                    print(f"Phoenix: Auto-installed Shizuku rish binaries on startup from {shizuku_src}!")
-            except Exception as e:
-                print(f"Phoenix: Startup Shizuku auto-install failed: {e}")
-        else:
-            print("⚠️ Shizuku 'rish' not found in PATH or storage. Put 'rish' and 'rish_shizuku.dex' in your phone's main Downloads folder or in the project directory.")
+    import subprocess
+    adb_installed = shutil.which("adb") is not None
+    adb_status = "Not Installed"
+    adb_device_info = ""
 
-    if shizuku_provisioned:
+    if adb_installed:
         try:
-            import subprocess
-            env = os.environ.copy()
-            env["RISH_APPLICATION_ID"] = get_termux_package_id()
-            env.pop("LD_LIBRARY_PATH", None)
-            env.pop("LD_PRELOAD", None)
-            shell_exe = "/system/bin/sh" if os.path.exists("/system/bin/sh") else "sh"
-            
-            # Fast test call to rish to check if binder is active and approved
-            # Use 2.0s timeout: if it hangs, it is likely waiting for authorization
-            try:
-                res = subprocess.run([shell_exe, shutil.which("rish"), "-c", "echo 1"], capture_output=True, timeout=2.0, env=env)
-                is_ok = (res.returncode == 0)
-                out = res.stdout.decode('utf-8', errors='ignore').strip() if res.stdout else ""
-                err = res.stderr.decode('utf-8', errors='ignore').strip() if res.stderr else ""
-                need_auth = (res.returncode == 1 or "permission" in err.lower() or "permission" in out.lower())
-            except subprocess.TimeoutExpired:
-                is_ok = False
-                need_auth = True
-                out, err = "", ""
-            
-            if is_ok:
-                shizuku_status = "Active / Connected"
-            elif need_auth:
-                print("\n\033[1;33m📣 [Shizuku Authorization Required]\033[0m")
-                print("\033[38;5;46m  Please check your phone screen now!\033[0m")
-                print("\033[38;5;255m  A popup will request permission for Termux to access Shizuku.\033[0m")
-                print("\033[1;32m  👉 Tap 'Always Allow' or 'Allow' to authorize the agent. 👈\033[0m\n")
-                
-                try:
-                    import pty
-                    master, slave = pty.openpty()
-                    # Spawn rish in a pty so it thinks it is in an interactive terminal and triggers popup
-                    p = subprocess.Popen(
-                        [shutil.which("rish")],
-                        stdin=slave,
-                        stdout=slave,
-                        stderr=slave,
-                        env=env,
-                        preexec_fn=os.setsid if hasattr(os, 'setsid') else None
-                    )
-                    # Keep it open for 10 seconds to give user time to click Allow
-                    time.sleep(10.0)
-                    p.terminate()
-                    p.wait(timeout=2.0)
-                except Exception as pty_err:
-                    print(f"  (Failed to start pty trigger: {pty_err})")
-                    
-                # Re-test connection state
-                try:
-                    res_retry = subprocess.run([shell_exe, shutil.which("rish"), "-c", "echo 1"], capture_output=True, timeout=3.5, env=env)
-                    if res_retry.returncode == 0:
-                        print("\033[38;5;46m[✓] Shizuku authorization successful!\033[0m\n")
-                        shizuku_status = "Active / Connected"
-                    else:
-                        shizuku_status = "Unauthorized (Approve Termux in Shizuku)"
-                except subprocess.TimeoutExpired:
-                    shizuku_status = "Unauthorized (Authorization Timeout)"
+            res = subprocess.run(["adb", "devices", "-l"], capture_output=True, text=True, timeout=5)
+            if res.returncode == 0:
+                lines = [l for l in res.stdout.strip().split("\n") if "device" in l and "List of" not in l]
+                devices = [l for l in lines if "device" in l and "offline" not in l and "unauthorized" not in l]
+                offline = [l for l in lines if "offline" in l]
+                unauthorized = [l for l in lines if "unauthorized" in l]
+
+                if devices:
+                    adb_status = "Connected"
+                    adb_device_info = devices[0].split()[0] if devices[0].split() else ""
+                elif unauthorized:
+                    adb_status = "Unauthorized"
+                    adb_device_info = "Check phone for USB debugging authorization popup"
+                elif offline:
+                    adb_status = "Offline"
+                    adb_device_info = "Reconnect device or re-run 'adb connect'"
+                else:
+                    adb_status = "No Device"
+                    adb_device_info = "Connect a device via USB or run 'adb connect <ip>:<port>'"
             else:
-                print(f"⚠️ Shizuku test failed (code {res.returncode}). stdout: '{out}', stderr: '{err}'")
-                shizuku_status = "Daemon Stopped (Start Shizuku app)"
+                adb_status = "Error"
+                adb_device_info = res.stderr.strip()[:80]
         except Exception as e:
-            print(f"⚠️ Shizuku test error: {str(e)}")
-            shizuku_status = f"Daemon Stopped ({type(e).__name__})"
+            adb_status = "Error"
+            adb_device_info = str(e)[:80]
     else:
-        shizuku_status = "Not Configured (Export files via Shizuku)"
+        adb_device_info = "Install Android platform-tools and add 'adb' to PATH"
 
     # 4. Print access information
     local_ip = get_local_ip()
@@ -7205,20 +7009,14 @@ if __name__ == '__main__':
     green_color = "\033[38;5;46m" # Bright Green
     white_color = "\033[38;5;255m" # White for URLs
     reset_color = "\033[0m"
-    banner_text = f"""{blue_color}██████╗  ██████╗  ██████╗██╗  ██╗███████╗████████╗
-██╔══██╗██╔═══██╗██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝
-██████╔╝██║   ██║██║     █████╔╝ █████╗     ██║   
-██╔═══╝ ██║   ██║██║     ██╔═██╗ ██╔══╝     ██║   
-██║     ╚██████╔╝╚██████╗██║  ██╗███████╗   ██║   
-╚═╝      ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝   {white_color}
-███████╗████████╗██████╗ ██╗██╗  ██╗███████╗     █████╗ ██╗
-██╔════╝╚══██╔══╝██╔══██╗██║██║ ██╔╝██╔════╝    ██╔══██╗██║
-███████╗   ██║   ██████╔╝██║█████╔╝ █████╗      ███████║██║
-╚════██║   ██║   ██╔══██╗██║██╔═██╗ ██╔══╝      ██╔══██║██║
-███████║   ██║   ██║  ██║██║██║  ██╗███████╗    ██║  ██║██║
-╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚══════╝    ╚═╝  ╚═╝╚═╝{reset_color}"""
+    banner_text = f"""{blue_color}██████╗ ██╗██╗  ██╗██████╗  ██████╗ ██╗  ██╗███████╗████████╗
+██╔══██╗██║██║ ██╔╝██╔══██╗██╔═══██╗██║ ██╔╝██╔════╝╚══██╔══╝
+██████╔╝██║█████╔╝ ██████╔╝██║   ██║█████╔╝ █████╗     ██║
+██╔═══╝ ██║██╔═██╗ ██╔══██╗██║   ██║██╔═██╗ ██╔══╝     ██║
+██║     ██║██║  ██╗██║  ██║╚██████╔╝██║  ██╗███████╗   ██║
+╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝{reset_color}"""
     print(banner_text)
-    print(f"       {blue_color}Pocket{green_color}Strike-AI {reset_color}— {blue_color}Gateway{reset_color}")
+    print(f"       {blue_color}PHOENIX {reset_color}— {blue_color}Gateway{reset_color}")
     print(f"{green_color}───────────────────────── Server is Starting ─────────────────────────{reset_color}")
     print(f"  Local URL:       {white_color}http://127.0.0.1:5000{reset_color}")
     print(f"  Network URL:     {white_color}http://{local_ip}:5000{reset_color}")
@@ -7226,7 +7024,9 @@ if __name__ == '__main__':
     print(f"  Model:           {white_color}{config.get('model', 'None')}{reset_color}")
     print(f"  Telegram Bot:    {white_color}{telegram_status}{reset_color}")
     print(f"  Voice Assistant: {white_color}{voice_status}{reset_color}")
-    print(f"  Shizuku Status:  {white_color}{shizuku_status}{reset_color}")
+    print(f"  ADB Status:      {white_color}{adb_status}{reset_color}")
+    if adb_device_info:
+        print(f"  ADB Info:        {white_color}{adb_device_info}{reset_color}")
     print(f"{green_color}──────────────────────────────────────────────────────────────────────{reset_color}\n")
 
     # Run Flask

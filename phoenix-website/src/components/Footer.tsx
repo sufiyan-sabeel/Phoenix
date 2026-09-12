@@ -1,94 +1,25 @@
-import { Link } from 'react-router-dom'
-import { Terminal } from 'lucide-react'
-import Github from './Github'
-
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-surface">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col md:flex-row items-start justify-between gap-8">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded bg-ember/10 border border-ember/20 flex items-center justify-center">
-                <Terminal size={12} className="text-ember" />
-              </div>
-              <span className="font-heading font-bold text-sm text-text">PHOENIX</span>
-            </div>
-            <p className="text-muted text-sm max-w-xs leading-relaxed">
-              Open-source AI coding & automation CLI for Termux, Linux, and Android workflows.
-            </p>
+    <footer className="w-full bg-bg border-t border-border">
+      <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="space-y-1 text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-2 text-text font-display font-semibold text-lg">
+            <span className="material-symbols-outlined text-ember">terminal</span>
+            <span>PHOENIX</span>
           </div>
-
-          <div className="flex gap-12">
-            <div>
-              <h4 className="text-[10px] font-mono font-semibold text-ghost uppercase tracking-widest mb-3">
-                Product
-              </h4>
-              <ul className="space-y-1.5">
-                <li><Link to="/#features" className="text-muted text-sm hover:text-text transition-colors">Features</Link></li>
-                <li><Link to="/docs/getting-started" className="text-muted text-sm hover:text-text transition-colors">Documentation</Link></li>
-                <li><Link to="/#install" className="text-muted text-sm hover:text-text transition-colors">Installation</Link></li>
-                <li><Link to="/#roadmap" className="text-muted text-sm hover:text-text transition-colors">Roadmap</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-[10px] font-mono font-semibold text-ghost uppercase tracking-widest mb-3">
-                Connect
-              </h4>
-              <ul className="space-y-1.5">
-                <li>
-                  <a
-                    href="https://github.com/sufiyan-sabeel/Phoenix"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-muted text-sm hover:text-text transition-colors"
-                  >
-                    <Github size={12} />
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/sufiyan-sabeel/Phoenix/issues"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted text-sm hover:text-text transition-colors"
-                  >
-                    Issues
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/sufiyan-sabeel/Phoenix/releases"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted text-sm hover:text-text transition-colors"
-                  >
-                    Releases
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-ghost text-xs font-mono">
-            MIT License &copy; 2026 Umaiz Sufiyan
+          <p className="text-sm text-muted">
+            &copy; 2026 PHOENIX by Umaiz Sufiyan. MIT Licensed.
           </p>
-          <div className="flex items-center gap-3">
-            <span className="text-ghost text-xs font-mono">PHOENIX CLI</span>
-            <span className="text-ghost text-xs">&bull;</span>
-            <a
-              href="https://github.com/sufiyan-sabeel/Phoenix/blob/main/LICENSE"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-ghost text-xs font-mono hover:text-muted transition-colors"
-            >
-              MIT
-            </a>
-          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-mono uppercase tracking-widest text-ghost">
+          <a href="/Phoenix/docs/getting-started" className="hover:text-ember transition-colors">Documentation</a>
+          <a href="/Phoenix/#roadmap" className="hover:text-ember transition-colors">Roadmap</a>
+          <a href="/Phoenix/#install" className="hover:text-ember transition-colors">Install</a>
+          <a href="/Phoenix/#architecture" className="hover:text-ember transition-colors">Architecture</a>
+          <a href="https://github.com/sufiyan-sabeel/Phoenix" target="_blank" rel="noopener noreferrer" className="hover:text-ember transition-colors flex items-center gap-1">
+            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fillRule="evenodd"></path></svg>
+            GitHub
+          </a>
         </div>
       </div>
     </footer>
