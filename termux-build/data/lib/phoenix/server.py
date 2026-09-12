@@ -233,6 +233,14 @@ def initialize_memory_files():
 WORKSPACE_DIR = get_android_workspace()
 initialize_memory_files()
 
+def sanitize_workspace_path(relative_path):
+    """Resolve a relative path against WORKSPACE_DIR, preventing directory traversal."""
+    real_workspace = os.path.realpath(WORKSPACE_DIR)
+    target = os.path.realpath(os.path.join(real_workspace, relative_path))
+    if not target.startswith(real_workspace + os.sep) and target != real_workspace:
+        raise ValueError(f"Access denied: path '{relative_path}' is outside workspace.")
+    return target
+
 def auto_evolve_memory_background(messages):
     """
     Runs in a background thread after each chat turn to review the interaction

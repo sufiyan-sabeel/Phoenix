@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Architecture // PHOENIX CLI — Technical Architecture</title>
+<meta name="description" content="Deep dive into PHOENIX CLI's subsystem architecture, execution pipeline, Android IPC bridge, and process isolation model." />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-primary-fixed": "#351000",
+        "secondary-fixed-dim": "#ffb4a2",
+        "error": "#ffb4ab",
+        "primary-fixed-dim": "#ffb694",
+        "on-background": "#e2e2e8",
+        "surface-container-low": "#1a1c20",
+        "on-secondary-fixed-variant": "#8a1d00",
+        "inverse-primary": "#a14000",
+        "surface-tint": "#ffb694",
+        "on-secondary-container": "#560e00",
+        "tertiary-fixed-dim": "#ffb95a",
+        "secondary-fixed": "#ffdad2",
+        "tertiary-fixed": "#ffddb6",
+        "surface-dim": "#111317",
+        "on-primary-fixed-variant": "#7b2f00",
+        "on-secondary-fixed": "#3c0700",
+        "tertiary-container": "#cf8a1f",
+        "on-surface-variant": "#e2bfb0",
+        "on-primary-container": "#571f00",
+        "on-tertiary-container": "#462b00",
+        "on-secondary": "#621100",
+        "primary": "#ffb694",
+        "on-error-container": "#ffdad6",
+        "on-tertiary-fixed": "#2a1800",
+        "secondary": "#ffb4a2",
+        "on-tertiary-fixed-variant": "#643f00",
+        "primary-fixed": "#ffdbcc",
+        "surface-container-lowest": "#0c0e12",
+        "surface-container": "#1e2024",
+        "primary-container": "#ff6a00",
+        "background": "#111317",
+        "surface-container-highest": "#333539",
+        "secondary-container": "#ff562c",
+        "surface-variant": "#333539",
+        "outline": "#a98a7d",
+        "inverse-surface": "#e2e2e8",
+        "error-container": "#93000a",
+        "on-tertiary": "#462a00",
+        "outline-variant": "#5a4136",
+        "surface-container-high": "#282a2e",
+        "surface-bright": "#37393e",
+        "on-surface": "#e2e2e8",
+        "on-primary": "#571f00",
+        "surface": "#111317",
+        "tertiary": "#ffb95a",
+        "on-error": "#690005"
+      },
+      borderRadius: {
+        DEFAULT: "0.125rem",
+        lg: "0.25rem",
+        xl: "0.5rem",
+        full: "0.75rem"
+      },
+      spacing: {
+        "space-sm": "0.5rem",
+        "margin": "1.5rem",
+        "space-lg": "1.5rem",
+        "space-xl": "2.5rem",
+        "gutter": "1rem",
+        "space-md": "1rem",
+        "space-xs": "0.25rem"
+      },
+      fontFamily: {
+        "body-sm": ["Inter"],
+        "headline-md": ["Space Grotesk"],
+        "code-lg": ["JetBrains Mono"],
+        "code-sm": ["JetBrains Mono"],
+        "display-mobile": ["Space Grotesk"],
+        "headline-lg-mobile": ["Space Grotesk"],
+        "headline-sm": ["Space Grotesk"],
+        "label-caps": ["JetBrains Mono"],
+        "body-md": ["Inter"],
+        "headline-lg": ["Space Grotesk"],
+        "body-lg": ["Inter"],
+        "display": ["Space Grotesk"],
+        "code-md": ["JetBrains Mono"]
+      },
+      fontSize: {
+        "body-sm": ["12px", { lineHeight: "18px", letterSpacing: "0.01em", fontWeight: "400" }],
+        "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "code-lg": ["15px", { lineHeight: "22px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "code-sm": ["11px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }],
+        "display-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "headline-lg-mobile": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "600" }],
+        "label-caps": ["10px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "600" }],
+        "body-md": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }],
+        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }],
+        "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "400" }],
+        "display": ["48px", { lineHeight: "56px", letterSpacing: "-0.03em", fontWeight: "700" }],
+        "code-md": ["13px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }]
+      }
+    }
+  }
+}
+</script>
+<style>
+html { scroll-behavior: smooth; }
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+.glow-ember {
+  box-shadow: 0 0 0 1px #ff6a00, 0 0 20px -4px rgba(255, 106, 0, 0.28);
+}
+.glow-ember-subtle {
+  box-shadow: 0 0 0 1px #333539, 0 4px 24px -2px rgba(0, 0, 0, 0.7);
+}
+.bg-grid-tech {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(51, 53, 57, 0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(51, 53, 57, 0.2) 1px, transparent 1px);
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.caret-blink {
+  animation: blink 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.nav-active {
+  position: relative;
+}
+.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #FF6A00;
+}
+.toc-link {
+  display: block;
+  padding: 6px 0 6px 16px;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+  color: #e2e2e8;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+.toc-link:hover, .toc-link.active {
+  color: #ffb694;
+  border-left-color: #ff6a00;
+  background: rgba(255, 106, 0, 0.05);
+}
+.left-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 18px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  color: #e2e2e8;
+  text-decoration: none;
+}
+.left-nav-link:hover {
+  background: rgba(51, 53, 57, 0.5);
+  color: #ffb694;
+}
+.left-nav-link.active {
+  background: rgba(255, 106, 0, 0.1);
+  color: #ffb694;
+  border-left: 2px solid #ff6a00;
+  padding-left: 10px;
+}
+.left-nav-group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e2e2e8;
+  padding: 12px 12px 6px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.left-nav-group-title:hover { color: #ffb694; }
+.left-nav-children {
+  padding-left: 12px;
+  border-left: 1px solid #333539;
+  margin-left: 18px;
+}
+.copy-btn {
+  transition: all 0.2s ease;
+}
+.copy-btn:hover {
+  background: #282a2e;
+  color: #ffb694;
+}
+.copy-btn.copied {
+  color: #4ade80;
+}
+.ember-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #FF6A00;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: ember-rise 4s ease-in infinite;
+}
+.ember-particle:nth-child(2) { left: 20%; animation-delay: 0.8s; animation-duration: 3.5s; width: 2px; height: 2px; }
+.ember-particle:nth-child(3) { left: 40%; animation-delay: 1.6s; animation-duration: 5s; }
+.ember-particle:nth-child(4) { left: 60%; animation-delay: 0.4s; animation-duration: 4.2s; width: 4px; height: 4px; }
+.ember-particle:nth-child(5) { left: 80%; animation-delay: 2.2s; animation-duration: 3.8s; width: 2px; height: 2px; }
+@keyframes ember-rise {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  10% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+  100% { transform: translateY(-200px) scale(0); opacity: 0; }
+}
+</style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-surface-container-lowest min-h-screen flex flex-col">
+
+<!-- TOP NAVBAR -->
+<header id="navbar" class="sticky top-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-xl border-b border-surface-container-highest transition-all duration-300">
+<div class="max-w-7xl mx-auto px-space-lg flex items-center justify-between h-14">
+<div class="flex items-center gap-3">
+<a class="font-headline-sm text-headline-sm tracking-tight text-on-surface flex items-center gap-space-xs font-semibold" href="index.html">
+  <svg class="w-7 h-7" viewBox="0 0 100 100" fill="none">
+    <rect width="100" height="100" rx="20" fill="#0c0e12"/>
+    <path d="M50 16 C58 28 68 38 68 50 C68 62 60 70 50 70 C40 70 32 62 32 50 C32 38 42 28 50 16Z" fill="#FF6A00" opacity="0.9"/>
+    <path d="M50 30 C54 36 59 44 59 50 C59 57 55 62 50 62 C45 62 41 57 41 50 C41 44 46 36 50 30Z" fill="#FFB694" opacity="0.7"/>
+    <circle cx="50" cy="50" r="4" fill="#fff" opacity="0.9"/>
+    <text x="50" y="82" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#FF6A00" opacity="0.8">&gt;_</text>
+  </svg>
+  <span class="tracking-wider">PHOENIX</span>
+</a>
+<span class="font-label-caps text-label-caps px-1.5 py-0.5 rounded-sm bg-surface-container-high text-primary border border-surface-container-highest">v0.4.2</span>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="index.html#features">Features</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="docs.html">Docs</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="index.html#install">Install</a>
+<a class="text-primary-container border-b-2 border-primary-container pb-1 font-medium font-body-sm text-body-sm nav-active" href="architecture.html">Architecture</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="about.html">About</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5 font-body-sm text-body-sm" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span>GitHub</span>
+</a>
+</nav>
+<div class="flex items-center gap-space-sm">
+<div class="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-sm bg-surface-container border border-surface-container-highest text-on-surface-variant font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-sm text-primary">terminal</span>
+<span>Terminal CLI</span>
+</div>
+<a class="px-3.5 py-1.5 rounded-md bg-primary-container text-on-primary font-code-md text-code-md font-semibold hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-1 shadow-sm" href="index.html#install">
+<span>Get Started</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</header>
+
+<!-- THREE-COLUMN LAYOUT -->
+<div class="flex-1 flex w-full max-w-[1440px] mx-auto">
+
+<!-- LEFT SIDEBAR -->
+<aside class="hidden lg:block w-64 flex-shrink-0 border-r border-surface-container-highest bg-surface-container-lowest/60 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
+<nav class="p-5">
+<div class="mb-4">
+<span class="text-primary-container font-label-caps text-label-caps tracking-wider">PHOENIX CORE</span>
+</div>
+
+<div class="mb-2">
+<div class="left-nav-group-title">
+<span class="material-symbols-outlined text-sm">home</span>
+<span>Getting Started</span>
+</div>
+<div class="left-nav-children space-y-0.5">
+<a href="index.html" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">description</span>
+<span>Overview</span>
+</a>
+<a href="index.html#install" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Installation</span>
+</a>
+</div>
+</div>
+
+<div class="mb-2">
+<div class="left-nav-group-title">
+<span class="material-symbols-outlined text-sm">code</span>
+<span>Usage</span>
+</div>
+<div class="left-nav-children space-y-0.5">
+<a href="index.html#features" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>CLI Reference</span>
+</a>
+<a href="index.html#features" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">smartphone</span>
+<span>Android / ADB</span>
+</a>
+<a href="index.html#features" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">hub</span>
+<span>Multi-Provider AI</span>
+</a>
+</div>
+</div>
+
+<div class="mb-2">
+<div class="left-nav-group-title">
+<span class="material-symbols-outlined text-sm">architecture</span>
+<span>Architecture</span>
+</div>
+<div class="left-nav-children space-y-0.5">
+<a href="#subsystem" class="left-nav-link active">
+<span class="material-symbols-outlined text-sm">dns</span>
+<span>Subsystem Overview</span>
+</a>
+<a href="#pipeline" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">linear_scale</span>
+<span>Execution Pipeline</span>
+</a>
+<a href="#ipc" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">phone_android</span>
+<span>Android IPC Bridge</span>
+</a>
+<a href="#isolation" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">shield</span>
+<span>Process Isolation</span>
+</a>
+</div>
+</div>
+
+<div class="mb-2">
+<div class="left-nav-group-title">
+<span class="material-symbols-outlined text-sm">settings</span>
+<span>Advanced</span>
+</div>
+<div class="left-nav-children space-y-0.5">
+<a href="index.html#architecture" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">route</span>
+<span>Roadmap</span>
+</a>
+<a href="index.html#about" class="left-nav-link">
+<span class="material-symbols-outlined text-sm">group</span>
+<span>About / Credits</span>
+</a>
+</div>
+</div>
+
+<div class="mt-6 pt-4 border-t border-surface-container-highest">
+<div class="p-3 bg-surface-container rounded-lg border border-surface-container-highest">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-emerald-400">DAEMON ACTIVE</span>
+</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant space-y-1">
+<div><span class="text-on-surface-variant/70">PID:</span> <span class="text-on-surface">4921</span></div>
+<div><span class="text-on-surface-variant/70">Uptime:</span> <span class="text-on-surface">4h 23m</span></div>
+<div><span class="text-on-surface-variant/70">Memory:</span> <span class="text-on-surface">12.4 MB</span></div>
+</div>
+</div>
+</div>
+</nav>
+</aside>
+
+<!-- CENTER CONTENT -->
+<main class="flex-1 min-w-0 bg-grid-tech">
+<div class="max-w-3xl mx-auto px-6 lg:px-8 py-12 lg:py-16">
+
+<!-- Page Header -->
+<div class="mb-12 reveal">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-surface-container-high border border-surface-container-highest mb-4">
+<span class="material-symbols-outlined text-primary text-sm">architecture</span>
+<span class="font-label-caps text-label-caps text-primary tracking-wider">DEEP DIVE</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-3">Technical Architecture</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">A comprehensive breakdown of PHOENIX's internal subsystem architecture, execution pipeline, Android IPC bridge, and process isolation model.</p>
+<div class="flex items-center gap-3 mt-4 font-code-sm text-code-sm text-on-surface-variant">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-emerald-400">schedule</span> Updated 2026-09-12</span>
+<span class="text-surface-container-highest">|</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-primary">menu_book</span> ~12 min read</span>
+</div>
+</div>
+
+<!-- SECTION 1: High-Level Subsystem Architecture -->
+<section id="subsystem" class="mb-16 reveal">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-label-caps text-label-caps text-primary tracking-wider">01</span>
+<div class="w-8 h-px bg-primary-container"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface">High-Level Subsystem Architecture</h2>
+</div>
+
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 leading-relaxed">
+PHOENIX is organized into four primary subsystems: the <strong class="text-on-surface">Core Runtime</strong>, the <strong class="text-on-surface">Provider Bridge</strong>, the <strong class="text-on-surface">Execution Engine</strong>, and the <strong class="text-on-surface">Android IPC Layer</strong>. Each subsystem communicates through well-defined interfaces, enabling modularity and testability.
+</p>
+
+<!-- ASCII Architecture Diagram -->
+<div class="mb-6 bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden">
+<div class="px-4 py-2.5 bg-surface-container border-b border-surface-container-highest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-primary">terminal</span>
+<span class="font-code-sm text-code-sm text-on-surface">architecture.svg</span>
+</div>
+<button class="copy-btn p-1.5 rounded-sm hover:bg-surface-container-high text-on-surface-variant" onclick="copyCode(this, 'ascii-diagram')" title="Copy diagram">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+<pre id="ascii-diagram" class="p-5 font-code-md text-code-md leading-relaxed text-on-surface-variant overflow-x-auto"><code>┌─────────────────────────────────────────────────────────────┐
+│                    PHOENIX CORE RUNTIME                      │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────────────┐ │
+│  │  Config   │  │  Session Mgr │  │  Context Memory Engine │ │
+│  │  Loader   │  │  (Async/Tokio)│  │  (sqlite-vec / FTS5)  │ │
+│  └────┬─────┘  └──────┬───────┘  └───────────┬────────────┘ │
+│       │               │                      │              │
+│  ┌────▼───────────────▼──────────────────────▼────────────┐ │
+│  │              COMMAND DISPATCHER (Router)                 │ │
+│  └────────┬──────────────┬──────────────────┬─────────────┘ │
+│           │              │                  │                │
+├───────────▼──────────────▼──────────────────▼────────────────┤
+│                    PROVIDER BRIDGE                            │
+│  ┌────────────┐  ┌────────────┐  ┌────────────────────────┐ │
+│  │ OpenRouter  │  │    Groq    │  │   Ollama (Local LLM)   │ │
+│  │ Adapter     │  │  Adapter   │  │   Adapter              │ │
+│  └──────┬─────┘  └──────┬─────┘  └───────────┬────────────┘ │
+│         └────────────────┼───────────────────┘              │
+│                    ┌─────▼─────┐                             │
+│                    │  Router    │                             │
+│                    │  (Selects  │                             │
+│                    │  provider) │                             │
+│                    └─────┬─────┘                             │
+├──────────────────────────┼───────────────────────────────────┤
+│                EXECUTION ENGINE                              │
+│  ┌───────────────────────▼──────────────────────────────┐   │
+│  │  Safety Sandbox (nsjail / bubblewrap)                │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────────────┐   │   │
+│  │  │  PTY     │  │  Script  │  │  Tool Executor   │   │   │
+│  │  │  Manager │  │  Runner  │  │  (LLM-driven)    │   │   │
+│  │  └──────────┘  └──────────┘  └──────────────────┘   │   │
+│  └──────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────┤
+│                  ANDROID IPC LAYER                           │
+│  ┌────────────┐  ┌────────────┐  ┌────────────────────────┐ │
+│  │  Termux    │  │  ADB       │  │  Intent Bridge         │ │
+│  │  API FFI   │  │  Proxy     │  │  (Android Native)      │ │
+│  └────────────┘  └────────────┘  └────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+</div>
+
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 leading-relaxed">
+The <strong class="text-primary">Command Dispatcher</strong> acts as the central router, receiving input from the CLI, piped streams, or the daemon. It resolves the appropriate handler and delegates execution downstream. The Provider Bridge normalizes responses from heterogeneous AI providers into a unified internal format.
+</p>
+
+<div class="p-4 bg-surface-container rounded-lg border border-surface-container-highest mb-4">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg mt-0.5">info</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+<strong class="text-on-surface">Design principle:</strong> Every subsystem boundary uses a trait-based interface (Rust) or protocol buffer (Python) so that internal implementations can be swapped without touching the rest of the codebase.
+</div>
+</div>
+</div>
+
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-3 mt-8">Subsystem Responsibilities</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+<div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-8 h-8 rounded-md bg-primary-container/10 border border-primary-container/30 flex items-center justify-center"><span class="material-symbols-outlined text-sm text-primary">dns</span></div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Core Runtime</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Session management, config loading, context memory indexing, and the Tokio async runtime.</p>
+</div>
+<div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-8 h-8 rounded-md bg-tertiary-container/10 border border-tertiary-container/30 flex items-center justify-center"><span class="material-symbols-outlined text-sm text-tertiary">hub</span></div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Provider Bridge</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Multi-provider routing, token counting, streaming response normalization, and fallback logic.</p>
+</div>
+<div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-8 h-8 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center"><span class="material-symbols-outlined text-sm text-emerald-400">play_arrow</span></div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Execution Engine</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">PTY management, sandboxed script execution, tool calling, and safety boundary enforcement.</p>
+</div>
+<div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-8 h-8 rounded-md bg-secondary-container/10 border border-secondary-container/30 flex items-center justify-center"><span class="material-symbols-outlined text-sm text-secondary">phone_android</span></div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Android IPC Layer</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Termux API FFI, ADB proxy, Android intent bridging, and device telemetry collection.</p>
+</div>
+</div>
+</section>
+
+<!-- SECTION 2: The 4-Stage Execution Pipeline -->
+<section id="pipeline" class="mb-16 reveal">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-label-caps text-label-caps text-primary tracking-wider">02</span>
+<div class="w-8 h-px bg-primary-container"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface">The 4-Stage Execution Pipeline</h2>
+</div>
+
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 leading-relaxed">
+Every command processed by PHOENIX flows through a four-stage pipeline. Each stage performs a discrete transformation and enforces specific safety checks before passing control to the next.
+</p>
+
+<!-- Stage 1 -->
+<div class="mb-4 bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden reveal-left" style="transition-delay: 0.05s">
+<div class="flex">
+<div class="w-1.5 flex-shrink-0 bg-primary-container"></div>
+<div class="flex-1 p-5">
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-primary-container px-2 py-0.5 bg-primary-container/10 border border-primary-container/20 rounded-sm">STAGE 1</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Input Parsing & Normalization</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">Raw input (CLI args, piped stdin, daemon request) is tokenized, validated, and normalized into a structured <code class="text-primary bg-surface-container px-1 py-0.5 rounded font-code-sm text-code-sm">CommandRequest</code> object. The parser handles shell quoting, variable expansion, and heredoc syntax.</p>
+<div class="p-3 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface-variant overflow-x-auto">
+<span class="text-primary-container">let</span> request = <span class="text-tertiary">CommandRequest</span>::parse(<span class="text-emerald-400">"phoenix code --diff ./src"</span>)?;
+</div>
+</div>
+</div>
+</div>
+
+<!-- Stage 2 -->
+<div class="mb-4 bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden reveal-left" style="transition-delay: 0.12s">
+<div class="flex">
+<div class="w-1.5 flex-shrink-0 bg-emerald-400"></div>
+<div class="flex-1 p-5">
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-emerald-400 px-2 py-0.5 bg-emerald-400/10 border border-emerald-400/20 rounded-sm">STAGE 2</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Context Assembly & Provider Routing</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">The system assembles relevant context from the local memory store, file tree scanner, and session history. The provider router selects the optimal AI backend based on latency, cost, and capability requirements.</p>
+<div class="p-3 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface-variant overflow-x-auto">
+<span class="text-primary-container">let</span> context = memory.<span class="text-tertiary">build_context</span>(&request, <span class="text-emerald-400">2048</span>);
+<span class="text-primary-container">let</span> provider = router.<span class="text-tertiary">select</span>(request.model_hint);
+</div>
+</div>
+</div>
+</div>
+
+<!-- Stage 3 -->
+<div class="mb-4 bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden reveal-left" style="transition-delay: 0.19s">
+<div class="flex">
+<div class="w-1.5 flex-shrink-0 bg-tertiary"></div>
+<div class="flex-1 p-5">
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-tertiary px-2 py-0.5 bg-tertiary/10 border border-tertiary/20 rounded-sm">STAGE 3</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Safety Inspection & Sandboxed Execution</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">Commands are scanned for destructive patterns (rm -rf, fork bombs, credential exposure). Approved commands execute inside a bubblewrap or nsjail sandbox with network isolation, memory limits, and filesystem whitelisting.</p>
+<div class="p-3 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface-variant overflow-x-auto">
+<span class="text-primary-container">let</span> verdict = safety.<span class="text-tertiary">inspect</span>(&command);
+<span class="text-primary-container">if</span> verdict.is_dangerous() { <span class="text-error">return</span> Err(SandboxDenied); }
+</div>
+</div>
+</div>
+</div>
+
+<!-- Stage 4 -->
+<div class="mb-4 bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden reveal-left" style="transition-delay: 0.26s">
+<div class="flex">
+<div class="w-1.5 flex-shrink-0 bg-secondary"></div>
+<div class="flex-1 p-5">
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-secondary px-2 py-0.5 bg-secondary/10 border border-secondary/20 rounded-sm">STAGE 4</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Output Streaming & Telemetry Logging</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">Execution results are streamed back via PTY to the terminal or daemon. Each stage's latency, token usage, and error counts are logged to the embedded telemetry store for the daemon dashboard.</p>
+<div class="p-3 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface-variant overflow-x-auto">
+<span class="text-primary-container">let</span> output = sandbox.<span class="text-tertiary">execute</span>(command).<span class="text-tertiary">await</span>?;
+telemetry.<span class="text-tertiary">record</span>(StageResult::new(output));
+</div>
+</div>
+</div>
+</div>
+
+<div class="p-4 bg-surface-container rounded-lg border border-surface-container-highest mt-6">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg mt-0.5">speed</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+<strong class="text-on-surface">Performance target:</strong> End-to-end pipeline latency under 24ms for local commands, under 200ms for API-routed completions (OpenRouter, Groq). Telemetry is recorded asynchronously to avoid impacting pipeline throughput.
+</div>
+</div>
+</div>
+</section>
+
+<!-- SECTION 3: Termux & Android IPC Bridge Internals -->
+<section id="ipc" class="mb-16 reveal">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-label-caps text-label-caps text-primary tracking-wider">03</span>
+<div class="w-8 h-px bg-primary-container"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Termux & Android IPC Bridge Internals</h2>
+</div>
+
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 leading-relaxed">
+The Android IPC bridge enables PHOENIX to interact with device hardware, sensors, and system services from within the Termux sandbox. It uses a combination of Termux API FFI bindings, ADB proxying, and direct Android intent dispatch.
+</p>
+
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-4">IPC Message Protocol</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 leading-relaxed">
+The bridge uses a length-prefixed binary protocol over Unix domain sockets. Messages are serialized with bincode and include a magic byte, message type, sequence number, and payload. The Rust implementation handles both the server (Termux side) and client (Python agent side) roles.
+</p>
+
+<!-- Rust Code Block -->
+<div class="mb-6 bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden">
+<div class="px-4 py-2.5 bg-surface-container border-b border-surface-container-highest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-primary">code</span>
+<span class="font-code-sm text-code-sm text-on-surface">ipc_bridge.rs</span>
+<span class="font-label-caps text-label-caps text-primary px-1.5 py-0.5 bg-primary-container/10 border border-primary-container/20 rounded-sm ml-2">Rust</span>
+</div>
+<button class="copy-btn p-1.5 rounded-sm hover:bg-surface-container-high text-on-surface-variant" onclick="copyCode(this, 'rust-code')" title="Copy code">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+</button>
+</div>
+<pre id="rust-code" class="p-5 font-code-md text-code-md leading-relaxed text-on-surface-variant overflow-x-auto"><code><span class="text-primary-container">use</span> tokio::net::UnixStream;
+<span class="text-primary-container">use</span> serde::{Serialize, Deserialize};
+
+<span class="text-tertiary">#[derive(Serialize, Deserialize)]</span>
+<span class="text-primary-container">pub struct</span> <span class="text-tertiary">IpcMessage</span> {
+    <span class="text-on-surface">magic: [u8; 4],</span>        <span class="text-on-surface-variant">// b"PHNX"</span>
+    <span class="text-on-surface">msg_type: <span class="text-tertiary">MessageType</span>,</span>
+    <span class="text-on-surface">seq: u32,</span>
+    <span class="text-on-surface">payload: Vec&lt;u8&gt;,</span>
+}
+
+<span class="text-tertiary">#[derive(Serialize, Deserialize)]</span>
+<span class="text-primary-container">pub enum</span> <span class="text-tertiary">MessageType</span> {
+    <span class="text-on-surface">TermuxApi,</span>
+    <span class="text-on-surface">AdbCommand,</span>
+    <span class="text-on-surface">SensorRead,</span>
+    <span class="text-on-surface">IntentDispatch,</span>
+    <span class="text-on-surface">Heartbeat,</span>
+}
+
+<span class="text-primary-container">pub async fn</span> <span class="text-tertiary">send_request</span>(
+    stream: &<span class="text-primary-container">mut</span> UnixStream,
+    msg: <span class="text-tertiary">IpcMessage</span>,
+) -> Result&lt;IpcMessage&gt; {
+    <span class="text-primary-container">let</span> encoded = bincode::serialize(&msg)?;
+    stream.write_all(&(encoded.len() <span class="text-primary-container">as</span> u32).to_le_bytes()).<span class="text-tertiary">await</span>?;
+    stream.write_all(&encoded).<span class="text-tertiary">await</span>?;
+
+    <span class="text-primary-container">let mut</span> len_buf = [0u8; 4];
+    stream.read_exact(&<span class="text-primary-container">mut</span> len_buf).<span class="text-tertiary">await</span>?;
+    <span class="text-primary-container">let</span> resp_len = u32::from_le_bytes(len_buf) <span class="text-primary-container">as</span> usize;
+    <span class="text-primary-container">let mut</span> resp_buf = vec![0u8; resp_len];
+    stream.read_exact(&<span class="text-primary-container">mut</span> resp_buf).<span class="text-tertiary">await</span>?;
+    Ok(bincode::deserialize(&resp_buf)?)
+}</code></pre>
+</div>
+
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-4">Supported IPC Operations</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+<div class="p-3 bg-surface-container rounded-lg border border-surface-container-highest">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-sm text-primary">phone_android</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Termux API</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">WiFi control, battery status, clipboard, camera, contacts, notifications, sensors, and SMS via the Termux:API addon.</p>
+</div>
+<div class="p-3 bg-surface-container rounded-lg border border-surface-container-highest">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-sm text-emerald-400">usb</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">ADB Proxy</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Remote shell execution, file push/pull, screenshot capture, input injection, and logcat streaming over USB/WiFi.</p>
+</div>
+<div class="p-3 bg-surface-container rounded-lg border border-surface-container-highest">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-sm text-tertiary">send</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Intent Dispatch</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Fire Android intents for deep linking, app launching, and inter-app communication via am start commands.</p>
+</div>
+<div class="p-3 bg-surface-container rounded-lg border border-surface-container-highest">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-sm text-secondary">sensors</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Sensor Access</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Accelerometer, gyroscope, GPS location, and ambient light sensor data for environmental awareness.</p>
+</div>
+</div>
+
+<div class="p-4 bg-surface-container rounded-lg border border-surface-container-highest">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg mt-0.5">warning</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+<strong class="text-on-surface">Security note:</strong> The IPC bridge enforces a strict message validation layer. All incoming messages are checked for valid magic bytes, sequence ordering, and payload size limits (max 1MB). Invalid messages are logged and the connection is terminated immediately.
+</div>
+</div>
+</div>
+</section>
+
+<!-- SECTION 4: Process Isolation & Safety Boundaries -->
+<section id="isolation" class="mb-16 reveal">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-label-caps text-label-caps text-primary tracking-wider">04</span>
+<div class="w-8 h-px bg-primary-container"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Process Isolation & Safety Boundaries</h2>
+</div>
+
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 leading-relaxed">
+PHOENIX enforces strict process isolation to prevent AI-generated commands from damaging the host system. The execution engine uses Linux namespaces and seccomp filters to create a sandboxed environment with limited system call access.
+</p>
+
+<!-- Comparison Table -->
+<div class="mb-6 bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden">
+<div class="px-4 py-2.5 bg-surface-container border-b border-surface-container-highest flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-primary">table_chart</span>
+<span class="font-code-sm text-code-sm text-on-surface">Isolation Feature Comparison</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="border-b border-surface-container-highest">
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant">Feature</th>
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant text-center">Unsafe Mode</th>
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant text-center">Safe Mode</th>
+<th class="px-4 py-3 font-label-caps text-label-caps text-on-surface-variant text-center">Maximum Lockdown</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm">
+<tr class="border-b border-surface-container-highest/50">
+<td class="px-4 py-3 text-on-surface">Network Access</td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-tertiary material-symbols-outlined text-sm">remove_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-error material-symbols-outlined text-sm">block</span></td>
+</tr>
+<tr class="border-b border-surface-container-highest/50">
+<td class="px-4 py-3 text-on-surface">Filesystem Write</td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-error material-symbols-outlined text-sm">block</span></td>
+</tr>
+<tr class="border-b border-surface-container-highest/50">
+<td class="px-4 py-3 text-on-surface">Process Fork</td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-tertiary material-symbols-outlined text-sm">remove_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-error material-symbols-outlined text-sm">block</span></td>
+</tr>
+<tr class="border-b border-surface-container-highest/50">
+<td class="px-4 py-3 text-on-surface">PTY Allocation</td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-tertiary material-symbols-outlined text-sm">remove_circle</span></td>
+</tr>
+<tr class="border-b border-surface-container-highest/50">
+<td class="px-4 py-3 text-on-surface">Shell Execution</td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-error material-symbols-outlined text-sm">block</span></td>
+</tr>
+<tr class="border-b border-surface-container-highest/50">
+<td class="px-4 py-3 text-on-surface">Credential Access</td>
+<td class="px-4 py-3 text-center"><span class="text-emerald-400 material-symbols-outlined text-sm">check_circle</span></td>
+<td class="px-4 py-3 text-center"><span class="text-error material-symbols-outlined text-sm">block</span></td>
+<td class="px-4 py-3 text-center"><span class="text-error material-symbols-outlined text-sm">block</span></td>
+</tr>
+<tr>
+<td class="px-4 py-3 text-on-surface">Seccomp Filters</td>
+<td class="px-4 py-3 text-center"><span class="text-on-surface-variant font-code-sm text-code-sm">off</span></td>
+<td class="px-4 py-3 text-center"><span class="text-on-surface-variant font-code-sm text-code-sm">allowlist</span></td>
+<td class="px-4 py-3 text-center"><span class="text-on-surface-variant font-code-sm text-code-sm">deny-all</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-4">Safety Boundary Architecture</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 leading-relaxed">
+The safety model operates on three concentric rings. The innermost ring is the <strong class="text-primary">Provider Bridge</strong>, which has no direct access to the filesystem or process table. The middle ring is the <strong class="text-primary">Execution Engine</strong>, which operates with constrained privileges inside a sandbox. The outermost ring is the <strong class="text-primary">Core Runtime</strong>, which has full host access but delegates all dangerous operations inward.
+</p>
+
+<div class="space-y-3 mb-4">
+<div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg">
+<div class="flex items-start gap-3">
+<span class="w-8 h-8 flex-shrink-0 rounded-md bg-primary-container/10 border border-primary-container/30 flex items-center justify-center"><span class="font-label-caps text-label-caps text-primary-container font-bold">R1</span></span>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Ring 1 — Provider Bridge (Untrusted)</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Receives API responses, parses JSON, validates schema. No system access. Runs in a Tokio task with a 10-second timeout.</p>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg">
+<div class="flex items-start gap-3">
+<span class="w-8 h-8 flex-shrink-0 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center"><span class="font-label-caps text-label-caps text-emerald-400 font-bold">R2</span></span>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Ring 2 — Execution Engine (Sandboxed)</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Runs shell commands inside bubblewrap with restricted syscalls. Filesystem is read-only except /tmp. Network disabled in safe mode.</p>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg">
+<div class="flex items-start gap-3">
+<span class="w-8 h-8 flex-shrink-0 rounded-md bg-secondary/10 border border-secondary/30 flex items-center justify-center"><span class="font-label-caps text-label-caps text-secondary font-bold">R3</span></span>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Ring 3 — Core Runtime (Host)</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Manages sessions, config, and telemetry. The only ring with full host access. All dangerous operations are delegated to Ring 2.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="p-4 bg-surface-container rounded-lg border border-surface-container-highest">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-emerald-400 text-lg mt-0.5">verified</span>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+<strong class="text-on-surface">Verified:</strong> Safety boundaries are tested against a comprehensive attack matrix including fork bombs, credential exfiltration, network tunneling, and symlink traversal. All tests run in CI on every commit.
+</div>
+</div>
+</div>
+</section>
+
+<!-- Page Navigation -->
+<div class="mt-16 pt-6 border-t border-surface-container-highest flex items-center justify-between gap-4">
+<a href="index.html" class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span>Home / Overview</span>
+</a>
+<a href="index.html#architecture" class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">
+<span>Roadmap</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+
+</div>
+</main>
+
+<!-- RIGHT SIDEBAR -->
+<aside class="hidden xl:block w-72 flex-shrink-0 border-l border-surface-container-highest bg-surface-container-lowest/60 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
+<div class="p-5">
+
+<!-- TOC -->
+<div class="mb-6">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider uppercase mb-3">On This Page</h4>
+<nav class="space-y-0.5" id="toc">
+<a href="#subsystem" class="toc-link active" data-toc="subsystem">Subsystem Overview</a>
+<a href="#pipeline" class="toc-link" data-toc="pipeline">Execution Pipeline</a>
+<a href="#ipc" class="toc-link" data-toc="ipc">Android IPC Bridge</a>
+<a href="#isolation" class="toc-link" data-toc="isolation">Process Isolation</a>
+</nav>
+</div>
+
+<div class="border-t border-surface-container-highest pt-6 mb-6"></div>
+
+<!-- Daemon Telemetry Card -->
+<div class="bg-surface-container-low border border-surface-container-highest rounded-lg overflow-hidden">
+<div class="px-4 py-3 bg-surface-container border-b border-surface-container-highest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-emerald-400">DAEMON TELEMETRY</span>
+</div>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">monitoring</span>
+</div>
+<div class="p-4 space-y-4">
+
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Runtime</span>
+<span class="font-code-sm text-code-sm text-on-surface flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+Tokio 1.38
+</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-emerald-400 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tokio Workers</span>
+<span class="font-code-sm text-code-sm text-on-surface">4 / 4 active</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 100%"></div>
+</div>
+</div>
+
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">IPC Status</span>
+<span class="font-code-sm text-code-sm text-emerald-400 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+Connected
+</span>
+</div>
+<div class="p-2.5 bg-surface-container-lowest border border-surface-container-highest rounded font-code-sm text-code-sm text-on-surface-variant space-y-0.5">
+<div><span class="text-on-surface-variant/70">Socket:</span> <span class="text-on-surface">/tmp/phoenix_ipc.sock</span></div>
+<div><span class="text-on-surface-variant/70">Latency:</span> <span class="text-on-surface">1.2ms avg</span></div>
+<div><span class="text-on-surface-variant/70">Messages/s:</span> <span class="text-on-surface">847</span></div>
+</div>
+</div>
+
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Memory Usage</span>
+<span class="font-code-sm text-code-sm text-on-surface">12.4 MB RSS</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 32%"></div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="font-code-sm text-code-sm text-on-surface-variant/70">Heap:</span>
+<span class="font-code-sm text-code-sm text-on-surface">8.1 MB</span>
+</div>
+<div class="flex items-center justify-between mt-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant/70">Stack:</span>
+<span class="font-code-sm text-code-sm text-on-surface">256 KB</span>
+</div>
+</div>
+
+<div class="pt-2 border-t border-surface-container-highest">
+<div class="flex items-center justify-between mb-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Uptime</span>
+<span class="font-code-sm text-code-sm text-on-surface" id="daemon-uptime">4h 23m 11s</span>
+</div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant">PID</span>
+<span class="font-code-sm text-code-sm text-on-surface">4921</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Platform</span>
+<span class="font-code-sm text-code-sm text-on-surface">aarch64-linux</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Quick Links -->
+<div class="mt-6 bg-surface-container-low border border-surface-container-highest rounded-lg p-4">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider uppercase mb-3">Quick Links</h4>
+<div class="space-y-1">
+<a href="index.html#install" class="flex items-center gap-2 px-3 py-2 rounded-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Installation Guide</span>
+</a>
+<a href="index.html#features" class="flex items-center gap-2 px-3 py-2 rounded-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>CLI Reference</span>
+</a>
+<a href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank" class="flex items-center gap-2 px-3 py-2 rounded-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm">code</span>
+<span>Source Code</span>
+</a>
+</div>
+</div>
+</div>
+</aside>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="w-full bg-surface-container-lowest border-t border-surface-container-highest">
+<div class="max-w-7xl mx-auto px-space-lg py-space-xl flex flex-col md:flex-row justify-between items-center gap-space-md">
+<div class="space-y-1 text-center md:text-left">
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center justify-center md:justify-start gap-2">
+<svg class="w-5 h-5" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="20" fill="#0c0e12"/>
+  <path d="M50 16 C58 28 68 38 68 50 C68 62 60 70 50 70 C40 70 32 62 32 50 C32 38 42 28 50 16Z" fill="#FF6A00" opacity="0.9"/>
+  <circle cx="50" cy="50" r="4" fill="#fff" opacity="0.9"/>
+</svg>
+<span>PHOENIX</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">&copy; 2026 PHOENIX by Umaiz Sufiyan. MIT Licensed. System Telemetry Active.</p>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-6 font-label-caps text-label-caps text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="index.html#docs">Documentation</a>
+<a class="hover:text-primary transition-colors" href="architecture.html">Architecture</a>
+<a class="hover:text-primary transition-colors" href="index.html#install">Termux Guide</a>
+<a class="hover:text-primary transition-colors" href="architecture.html">Architecture</a>
+<a class="hover:text-primary transition-colors" href="index.html#about">About</a>
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span>GitHub</span>
+</a>
+</div>
+</div>
+</footer>
+
+<script>
+// Scroll reveal observer
+const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -40px 0px' };
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => observer.observe(el));
+
+// TOC active link tracking
+const tocLinks = document.querySelectorAll('.toc-link');
+const sections = document.querySelectorAll('section[id]');
+const tocObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.getAttribute('id');
+      tocLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-toc') === id) {
+          link.classList.add('active');
+        }
+      });
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-80px 0px -60% 0px' });
+
+sections.forEach(section => tocObserver.observe(section));
+
+// Left nav active link tracking
+const leftNavLinks = document.querySelectorAll('.left-nav-link');
+const leftNavObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.getAttribute('href');
+      if (id && id.startsWith('#')) {
+        leftNavLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === id) {
+            link.classList.add('active');
+          }
+        });
+      }
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-80px 0px -60% 0px' });
+
+sections.forEach(section => leftNavObserver.observe(section));
+
+// Copy code button
+function copyCode(btn, codeId) {
+  const codeEl = document.getElementById(codeId);
+  if (!codeEl) return;
+  const text = codeEl.textContent || codeEl.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.querySelector('.material-symbols-outlined').textContent = 'check';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.querySelector('.material-symbols-outlined').textContent = 'content_copy';
+    }, 2000);
+  });
+}
+
+// Daemon uptime counter
+(function() {
+  const uptimeEl = document.getElementById('daemon-uptime');
+  if (!uptimeEl) return;
+  let seconds = 4 * 3600 + 23 * 60 + 11;
+  setInterval(() => {
+    seconds++;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    uptimeEl.textContent = h + 'h ' + String(m).padStart(2, '0') + 'm ' + String(s).padStart(2, '0') + 's';
+  }, 1000);
+})();
+
+// Navbar scroll effect
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 50) {
+    navbar.classList.add('border-surface-container-highest/50');
+  } else {
+    navbar.classList.remove('border-surface-container-highest/50');
+  }
+});
+</script>
+
+</body>
+</html>

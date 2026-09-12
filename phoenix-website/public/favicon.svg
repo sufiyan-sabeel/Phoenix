@@ -1,4 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#08090B"/>
-  <text x="16" y="22" text-anchor="middle" font-family="monospace" font-weight="700" font-size="18" fill="#FF6A00">P</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="ember" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB694"/>
+      <stop offset="50%" stop-color="#FF6A00"/>
+      <stop offset="100%" stop-color="#FF562C"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="100" height="100" rx="20" fill="#0c0e12"/>
+  <g transform="translate(50,48)" filter="url(#glow)">
+    <!-- Flame body -->
+    <path d="M0-32 C8-20 18-8 18 6 C18 18 10 28 0 28 C-10 28 -18 18 -18 6 C-18-8 -8-20 0-32Z" fill="url(#ember)" opacity="0.9"/>
+    <!-- Inner flame -->
+    <path d="M0-18 C4-12 9-2 9 6 C9 13 5 18 0 18 C-5 18 -9 13 -9 6 C-9-2 -4-12 0-18Z" fill="#FFB694" opacity="0.7"/>
+    <!-- Core -->
+    <circle cx="0" cy="6" r="4" fill="#fff" opacity="0.9"/>
+    <!-- Terminal cursor -->
+    <rect x="-6" y="14" width="12" height="2" rx="1" fill="#0c0e12" opacity="0.6"/>
+  </g>
+  <!-- Terminal prompt bracket -->
+  <text x="50" y="82" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#FF6A00" opacity="0.8">&gt;_</text>
 </svg>

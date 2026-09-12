@@ -33,6 +33,10 @@ jobs:
           cp public/robots.txt dist/
           cp public/404.html dist/
           cp index.html dist/
+          cp docs.html dist/
+          cp architecture.html dist/
+          cp about.html dist/
+          cp dashboard.html dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

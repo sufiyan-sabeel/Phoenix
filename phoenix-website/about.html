@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About // PHOENIX — Built by Umaiz Sufiyan</title>
+<meta name="description" content="Meet the creator behind PHOENIX. Umaiz Sufiyan is a 16-year-old self-taught developer who built an AI-powered CLI for Termux and Linux." />
+<meta property="og:title" content="About // PHOENIX — Built by Umaiz Sufiyan" />
+<meta property="og:description" content="Meet the creator behind PHOENIX. 16-year-old self-taught developer." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://sufiyan-sabeel.github.io/Phoenix/about.html" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-primary-fixed": "#351000",
+        "secondary-fixed-dim": "#ffb4a2",
+        "error": "#ffb4ab",
+        "primary-fixed-dim": "#ffb694",
+        "on-background": "#e2e2e8",
+        "surface-container-low": "#1a1c20",
+        "on-secondary-fixed-variant": "#8a1d00",
+        "inverse-primary": "#a14000",
+        "surface-tint": "#ffb694",
+        "on-secondary-container": "#560e00",
+        "tertiary-fixed-dim": "#ffb95a",
+        "secondary-fixed": "#ffdad2",
+        "tertiary-fixed": "#ffddb6",
+        "surface-dim": "#111317",
+        "on-primary-fixed-variant": "#7b2f00",
+        "on-secondary-fixed": "#3c0700",
+        "tertiary-container": "#cf8a1f",
+        "on-surface-variant": "#e2bfb0",
+        "on-primary-container": "#571f00",
+        "on-tertiary-container": "#462b00",
+        "on-secondary": "#621100",
+        "primary": "#ffb694",
+        "on-error-container": "#ffdad6",
+        "on-tertiary-fixed": "#2a1800",
+        "secondary": "#ffb4a2",
+        "on-tertiary-fixed-variant": "#643f00",
+        "primary-fixed": "#ffdbcc",
+        "surface-container-lowest": "#0c0e12",
+        "surface-container": "#1e2024",
+        "primary-container": "#ff6a00",
+        "background": "#111317",
+        "surface-container-highest": "#333539",
+        "secondary-container": "#ff562c",
+        "surface-variant": "#333539",
+        "outline": "#a98a7d",
+        "inverse-surface": "#e2e2e8",
+        "error-container": "#93000a",
+        "on-tertiary": "#462a00",
+        "outline-variant": "#5a4136",
+        "surface-container-high": "#282a2e",
+        "surface-bright": "#37393e",
+        "on-surface": "#e2e2e8",
+        "on-primary": "#571f00",
+        "surface": "#111317",
+        "tertiary": "#ffb95a",
+        "on-error": "#690005"
+      },
+      borderRadius: {
+        DEFAULT: "0.125rem",
+        lg: "0.25rem",
+        xl: "0.5rem",
+        full: "0.75rem"
+      },
+      spacing: {
+        "space-sm": "0.5rem",
+        "margin": "1.5rem",
+        "space-lg": "1.5rem",
+        "space-xl": "2.5rem",
+        "gutter": "1rem",
+        "space-md": "1rem",
+        "space-xs": "0.25rem"
+      },
+      fontFamily: {
+        "body-sm": ["Inter"],
+        "headline-md": ["Space Grotesk"],
+        "code-lg": ["JetBrains Mono"],
+        "code-sm": ["JetBrains Mono"],
+        "display-mobile": ["Space Grotesk"],
+        "headline-lg-mobile": ["Space Grotesk"],
+        "headline-sm": ["Space Grotesk"],
+        "label-caps": ["JetBrains Mono"],
+        "body-md": ["Inter"],
+        "headline-lg": ["Space Grotesk"],
+        "body-lg": ["Inter"],
+        "display": ["Space Grotesk"],
+        "code-md": ["JetBrains Mono"]
+      },
+      fontSize: {
+        "body-sm": ["12px", { lineHeight: "18px", letterSpacing: "0.01em", fontWeight: "400" }],
+        "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "code-lg": ["15px", { lineHeight: "22px", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "code-sm": ["11px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }],
+        "display-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "headline-lg-mobile": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "600" }],
+        "label-caps": ["10px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "600" }],
+        "body-md": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }],
+        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "600" }],
+        "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "400" }],
+        "display": ["48px", { lineHeight: "56px", letterSpacing: "-0.03em", fontWeight: "700" }],
+        "code-md": ["13px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }]
+      }
+    }
+  }
+}
+</script>
+<style>
+html { scroll-behavior: smooth; }
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+.glow-ember {
+  box-shadow: 0 0 0 1px #ff6a00, 0 0 20px -4px rgba(255, 106, 0, 0.28);
+}
+.glow-ember-subtle {
+  box-shadow: 0 0 0 1px #333539, 0 4px 24px -2px rgba(0, 0, 0, 0.7);
+}
+.bg-grid-tech {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(51, 53, 57, 0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(51, 53, 57, 0.2) 1px, transparent 1px);
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.caret-blink {
+  animation: blink 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.stagger-children > *:nth-child(1) { transition-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { transition-delay: 0.12s; }
+.stagger-children > *:nth-child(3) { transition-delay: 0.19s; }
+.stagger-children > *:nth-child(4) { transition-delay: 0.26s; }
+.stagger-children > *:nth-child(5) { transition-delay: 0.33s; }
+.stagger-children > *:nth-child(6) { transition-delay: 0.40s; }
+.stagger-children > *:nth-child(7) { transition-delay: 0.47s; }
+.stagger-children > *:nth-child(8) { transition-delay: 0.54s; }
+.ember-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #FF6A00;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: ember-rise 4s ease-in infinite;
+}
+.ember-particle:nth-child(2) { left: 20%; animation-delay: 0.8s; animation-duration: 3.5s; width: 2px; height: 2px; }
+.ember-particle:nth-child(3) { left: 40%; animation-delay: 1.6s; animation-duration: 5s; }
+.ember-particle:nth-child(4) { left: 60%; animation-delay: 0.4s; animation-duration: 4.2s; width: 4px; height: 4px; }
+.ember-particle:nth-child(5) { left: 80%; animation-delay: 2.2s; animation-duration: 3.8s; width: 2px; height: 2px; }
+@keyframes ember-rise {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  10% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+  100% { transform: translateY(-200px) scale(0); opacity: 0; }
+}
+.hover-glow:hover {
+  box-shadow: 0 0 30px -5px rgba(255, 106, 0, 0.3);
+}
+.nav-active {
+  position: relative;
+}
+.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #FF6A00;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+.float-anim {
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 106, 0, 0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(255, 106, 0, 0.15); }
+}
+.pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+</style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-surface-container-lowest min-h-screen flex flex-col">
+
+<!-- TOP NAVBAR -->
+<header id="navbar" class="sticky top-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-xl border-b border-surface-container-highest transition-all duration-300">
+<div class="max-w-7xl mx-auto px-space-lg flex items-center justify-between h-14">
+<div class="flex items-center gap-3">
+<a class="font-headline-sm text-headline-sm tracking-tight text-on-surface flex items-center gap-space-xs font-semibold" href="index.html">
+<svg class="w-7 h-7" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="20" fill="#0c0e12"/>
+  <path d="M50 16 C58 28 68 38 68 50 C68 62 60 70 50 70 C40 70 32 62 32 50 C32 38 42 28 50 16Z" fill="#FF6A00" opacity="0.9"/>
+  <path d="M50 30 C54 36 59 44 59 50 C59 57 55 62 50 62 C45 62 41 57 41 50 C41 44 46 36 50 30Z" fill="#FFB694" opacity="0.7"/>
+  <circle cx="50" cy="50" r="4" fill="#fff" opacity="0.9"/>
+  <text x="50" y="82" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#FF6A00" opacity="0.8">&gt;_</text>
+</svg>
+<span class="tracking-wider">PHOENIX</span>
+</a>
+<span class="font-label-caps text-label-caps px-1.5 py-0.5 rounded-sm bg-surface-container-high text-primary border border-surface-container-highest">v0.4.2</span>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="index.html#features">Features</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="docs.html">Docs</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="index.html#install">Install</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm" href="architecture.html">Architecture</a>
+<a class="text-primary-container border-b-2 border-primary-container pb-1 font-medium font-body-sm text-body-sm nav-active" href="about.html">About</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1.5 font-body-sm text-body-sm" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span>GitHub</span>
+</a>
+</nav>
+<div class="flex items-center gap-space-sm">
+<div class="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-sm bg-surface-container border border-surface-container-highest text-on-surface-variant font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-sm text-primary">terminal</span>
+<span>Terminal CLI</span>
+</div>
+<a class="px-3.5 py-1.5 rounded-md bg-primary-container text-on-primary font-code-md text-code-md font-semibold hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-1 shadow-sm" href="index.html#install">
+<span>Get Started</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</header>
+
+<!-- MAIN CANVAS -->
+<main class="flex-1 w-full bg-grid-tech">
+
+<!-- HERO: BUILT BY SECTION -->
+<section class="relative max-w-[1240px] mx-auto px-space-lg pt-16 pb-20 lg:pt-24 lg:pb-32 overflow-hidden">
+<div class="absolute inset-0 pointer-events-none">
+  <div class="ember-particle" style="left:15%;bottom:0"></div>
+  <div class="ember-particle" style="left:35%;bottom:0"></div>
+  <div class="ember-particle" style="left:55%;bottom:0"></div>
+  <div class="ember-particle" style="left:75%;bottom:0"></div>
+  <div class="ember-particle" style="left:25%;bottom:0"></div>
+</div>
+<div class="text-center max-w-3xl mx-auto space-y-6 reveal">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-surface-container-high border border-surface-container-highest text-on-surface">
+    <span class="material-symbols-outlined text-primary text-sm">person</span>
+    <span class="font-label-caps text-label-caps tracking-wider text-primary">THE CREATOR</span>
+  </div>
+  <h1 class="font-display text-display tracking-tight text-on-surface">
+    Built by a 16-year-old <br/>
+    <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-red-500">student.</span>
+  </h1>
+  <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mx-auto">
+    Every line of PHOENIX was written by a self-taught developer with a single goal: make the terminal more powerful for everyone.
+  </p>
+</div>
+</section>
+
+<!-- PROFILE CARD -->
+<section class="max-w-[1240px] mx-auto px-space-lg -mt-8 pb-16">
+<div class="bg-surface-container-low border border-surface-container-highest rounded-xl overflow-hidden reveal-scale">
+<div class="relative h-32 bg-gradient-to-r from-primary-container/20 via-tertiary-container/10 to-primary-container/20 border-b border-surface-container-highest">
+  <div class="absolute inset-0 bg-grid-tech opacity-30"></div>
+</div>
+<div class="px-8 lg:px-12 pb-10 -mt-16">
+  <div class="flex flex-col lg:flex-row gap-8 items-start">
+    <!-- Avatar -->
+    <div class="relative shrink-0">
+      <div class="w-32 h-32 rounded-full bg-surface-container-high border-4 border-primary-container glow-ember pulse-glow flex items-center justify-center overflow-hidden">
+        <svg class="w-16 h-16 text-primary-container" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/>
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        </svg>
+      </div>
+      <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400 border-2 border-surface-container-low flex items-center justify-center">
+        <span class="material-symbols-outlined text-surface-container-lowest text-xs">check</span>
+      </div>
+    </div>
+    <!-- Info -->
+    <div class="flex-1 pt-2">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+        <h2 class="font-headline-lg text-headline-lg text-on-surface">Umaiz Sufiyan</h2>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-primary-container/10 border border-primary-container/20 text-primary font-label-caps text-label-caps self-start">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
+          CREATOR &amp; LEAD DEVELOPER
+        </span>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mb-6 leading-relaxed">
+        16-year-old self-taught developer passionate about building tools that make the terminal more powerful. Started coding at age 14 and launched PHOENIX as an open-source project to give every developer real AI power on Android and Linux.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a class="px-4 py-2 rounded-md bg-primary-container text-on-primary font-code-sm text-code-sm font-semibold flex items-center gap-1.5 hover:brightness-110 active:scale-[0.98] transition-all" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+          <span>GitHub Profile</span>
+          <span class="material-symbols-outlined text-xs">open_in_new</span>
+        </a>
+        <a class="px-4 py-2 rounded-md bg-surface-container-low border border-surface-container-highest text-on-surface font-code-sm text-code-sm font-medium flex items-center gap-1.5 hover:bg-surface-container-high transition-colors" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+          <span>View PHOENIX Repo</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</section>
+
+<!-- STATS -->
+<section class="max-w-[1240px] mx-auto px-space-lg pb-16">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
+  <div class="p-6 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 reveal">
+    <div class="w-10 h-10 mx-auto mb-3 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container">
+      <span class="material-symbols-outlined text-xl">schedule</span>
+    </div>
+    <div class="font-headline-lg text-headline-lg text-primary font-bold">2+</div>
+    <div class="font-label-caps text-label-caps text-on-surface-variant mt-1">YEARS CODING</div>
+  </div>
+  <div class="p-6 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 reveal">
+    <div class="w-10 h-10 mx-auto mb-3 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container">
+      <span class="material-symbols-outlined text-xl">commit</span>
+    </div>
+    <div class="font-headline-lg text-headline-lg text-primary font-bold">500+</div>
+    <div class="font-label-caps text-label-caps text-on-surface-variant mt-1">GITHUB CONTRIBUTIONS</div>
+  </div>
+  <div class="p-6 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 reveal">
+    <div class="w-10 h-10 mx-auto mb-3 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container">
+      <span class="material-symbols-outlined text-xl">gavel</span>
+    </div>
+    <div class="font-headline-lg text-headline-lg text-primary font-bold">MIT</div>
+    <div class="font-label-caps text-label-caps text-on-surface-variant mt-1">LICENSED</div>
+  </div>
+  <div class="p-6 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 reveal">
+    <div class="w-10 h-10 mx-auto mb-3 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container">
+      <span class="material-symbols-outlined text-xl">open_in_new</span>
+    </div>
+    <div class="font-headline-lg text-headline-lg text-primary font-bold">100%</div>
+    <div class="font-label-caps text-label-caps text-on-surface-variant mt-1">OPEN SOURCE</div>
+  </div>
+</div>
+</section>
+
+<!-- JOURNEY / TIMELINE -->
+<section class="max-w-[1240px] mx-auto px-space-lg pb-16">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+  <!-- Timeline -->
+  <div class="lg:col-span-7">
+    <div class="mb-8 reveal">
+      <div class="font-label-caps text-label-caps text-primary tracking-widest uppercase mb-1">JOURNEY</div>
+      <h2 class="font-headline-lg text-headline-lg text-on-surface">From first script to open source.</h2>
+    </div>
+    <div class="relative pl-8 border-l-2 border-surface-container-highest space-y-8">
+      <div class="relative reveal">
+        <span class="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-surface-container-lowest"></span>
+        <div class="flex items-center gap-3 mb-1">
+          <span class="font-headline-sm text-headline-sm text-on-surface">2024</span>
+          <span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">STARTED</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-1">Started learning Python</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">First steps into programming. Built small automation scripts and learned terminal fundamentals. Discovered the power of the command line.</p>
+      </div>
+      <div class="relative reveal" style="transition-delay:0.1s">
+        <span class="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-primary-container border-2 border-surface-container-lowest"></span>
+        <div class="flex items-center gap-3 mb-1">
+          <span class="font-headline-sm text-headline-sm text-on-surface">2025</span>
+          <span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-primary-container/10 text-primary border border-primary-container/20">GROWTH</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-1">Built first CLI tool</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Created PocketStrike-AI (now PHOENIX) as a personal project to automate Android workflows. Experimented with AI APIs and shell integration.</p>
+      </div>
+      <div class="relative reveal" style="transition-delay:0.2s">
+        <span class="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-primary-container animate-pulse border-2 border-surface-container-lowest"></span>
+        <div class="flex items-center gap-3 mb-1">
+          <span class="font-headline-sm text-headline-sm text-on-surface">2026</span>
+          <span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CURRENT</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-1">Launched PHOENIX open-source</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Released to the public with Termux packaging, multi-provider AI, and a growing community. Full MIT licensed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side Card: What drives me -->
+  <div class="lg:col-span-5">
+    <div class="bg-surface-container-low border border-surface-container-highest rounded-xl p-6 lg:p-8 reveal-right">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="w-8 h-8 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center text-primary-container">
+          <span class="material-symbols-outlined text-lg">local_fire_department</span>
+        </span>
+        <h3 class="font-headline-md text-headline-md text-on-surface">What drives me</h3>
+      </div>
+      <div class="space-y-5">
+        <div class="flex gap-3">
+          <span class="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">terminal</span>
+          <div>
+            <h4 class="font-headline-sm text-headline-sm text-on-surface mb-1">Terminal-first philosophy</h4>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Real work happens in the terminal. PHOENIX exists to make that experience faster, smarter, and more capable.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <span class="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">phone_android</span>
+          <div>
+            <h4 class="font-headline-sm text-headline-sm text-on-surface mb-1">Mobile is underserved</h4>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Developers on Android deserve the same tools as desktop users. Termux is powerful but needs better AI integration.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <span class="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">lock_open</span>
+          <div>
+            <h4 class="font-headline-sm text-headline-sm text-on-surface mb-1">Open source matters</h4>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Code should be free. MIT licensed, community driven, transparent development from day one.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <span class="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">psychology</span>
+          <div>
+            <h4 class="font-headline-sm text-headline-sm text-on-surface mb-1">Self-taught curiosity</h4>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">No bootcamp, no degree. Just curiosity, documentation, and shipping code every day.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- TECH STACK -->
+<section class="max-w-[1240px] mx-auto px-space-lg pb-16">
+<div class="mb-8 reveal">
+  <div class="font-label-caps text-label-caps text-primary tracking-widest uppercase mb-1">TECH STACK</div>
+  <h2 class="font-headline-lg text-headline-lg text-on-surface">Tools I work with.</h2>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-children">
+  <div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 group reveal">
+    <div class="w-10 h-10 mx-auto mb-2 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+      <span class="material-symbols-outlined text-primary-container text-xl">code</span>
+    </div>
+    <div class="font-code-sm text-code-sm text-on-surface font-medium">Python</div>
+  </div>
+  <div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 group reveal">
+    <div class="w-10 h-10 mx-auto mb-2 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+      <span class="material-symbols-outlined text-primary-container text-xl">terminal</span>
+    </div>
+    <div class="font-code-sm text-code-sm text-on-surface font-medium">Bash</div>
+  </div>
+  <div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 group reveal">
+    <div class="w-10 h-10 mx-auto mb-2 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+      <span class="material-symbols-outlined text-primary-container text-xl">web</span>
+    </div>
+    <div class="font-code-sm text-code-sm text-on-surface font-medium">HTML/CSS</div>
+  </div>
+  <div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 group reveal">
+    <div class="w-10 h-10 mx-auto mb-2 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+      <span class="material-symbols-outlined text-primary-container text-xl">memory</span>
+    </div>
+    <div class="font-code-sm text-code-sm text-on-surface font-medium">Rust</div>
+  </div>
+  <div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 group reveal">
+    <div class="w-10 h-10 mx-auto mb-2 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+      <span class="material-symbols-outlined text-primary-container text-xl">smartphone</span>
+    </div>
+    <div class="font-code-sm text-code-sm text-on-surface font-medium">Termux</div>
+  </div>
+  <div class="p-4 bg-surface-container-low border border-surface-container-highest rounded-lg text-center hover-glow transition-all duration-300 group reveal">
+    <div class="w-10 h-10 mx-auto mb-2 rounded-md bg-surface-container-high border border-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+      <span class="material-symbols-outlined text-primary-container text-xl">hub</span>
+    </div>
+    <div class="font-code-sm text-code-sm text-on-surface font-medium">Git</div>
+  </div>
+</div>
+</section>
+
+<!-- OPEN SOURCE / LICENSE -->
+<section class="max-w-[1240px] mx-auto px-space-lg pb-16">
+<div class="bg-surface-container-low border border-surface-container-highest rounded-xl p-8 lg:p-12 reveal-scale">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+  <div class="lg:col-span-7 space-y-4 reveal-left">
+    <span class="font-label-caps text-label-caps text-primary tracking-wider uppercase">OPEN SOURCE</span>
+    <h2 class="font-headline-lg text-headline-lg text-on-surface">Built in the open. <br/>For the community.</h2>
+    <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">PHOENIX is 100% open source under the MIT License. Every commit, every decision, every feature is public. Contributions welcome.</p>
+    <div class="flex flex-wrap items-center gap-3 pt-2">
+      <a class="px-4 py-2.5 rounded-md bg-primary-container text-on-primary font-code-sm text-code-sm font-semibold flex items-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+        <span>View on GitHub</span>
+      </a>
+      <a class="px-4 py-2.5 rounded-md bg-surface-container-low border border-surface-container-highest text-on-surface font-code-sm text-code-sm font-medium flex items-center gap-2 hover:bg-surface-container-high transition-colors" href="index.html#install">
+        <span class="material-symbols-outlined text-base">download</span>
+        <span>Install PHOENIX</span>
+      </a>
+    </div>
+  </div>
+  <div class="lg:col-span-5 reveal-right">
+    <div class="bg-surface-container-lowest border border-surface-container-highest rounded-lg p-6 font-code-md text-code-md space-y-3">
+      <div class="flex items-center gap-2 text-on-surface-variant font-code-sm text-code-sm">
+        <span class="text-primary-container font-bold">&#10095;</span>
+        <span>git clone https://github.com/sufiyan-sabeel/Phoenix</span>
+      </div>
+      <div class="flex items-center gap-2 text-on-surface-variant font-code-sm text-code-sm">
+        <span class="text-primary-container font-bold">&#10095;</span>
+        <span>cd Phoenix</span>
+      </div>
+      <div class="flex items-center gap-2 text-on-surface-variant font-code-sm text-code-sm">
+        <span class="text-primary-container font-bold">&#10095;</span>
+        <span>pip install -e .</span>
+      </div>
+      <div class="flex items-center gap-2 text-emerald-400 font-code-sm text-code-sm pt-2 border-t border-surface-container-highest/60">
+        <span>&#10004;</span>
+        <span>PHOENIX is ready. Star the repo to support!</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="w-full bg-surface-container-lowest border-t border-surface-container-highest">
+<div class="max-w-7xl mx-auto px-space-lg py-space-xl flex flex-col md:flex-row justify-between items-center gap-space-md">
+<div class="space-y-1 text-center md:text-left">
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold flex items-center justify-center md:justify-start gap-2">
+<svg class="w-5 h-5" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="20" fill="#0c0e12"/>
+  <path d="M50 16 C58 28 68 38 68 50 C68 62 60 70 50 70 C40 70 32 62 32 50 C32 38 42 28 50 16Z" fill="#FF6A00" opacity="0.9"/>
+  <circle cx="50" cy="50" r="4" fill="#fff" opacity="0.9"/>
+</svg>
+<span>PHOENIX</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">&copy; 2026 PHOENIX by Umaiz Sufiyan. MIT Licensed. System Telemetry Active.</p>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-6 font-label-caps text-label-caps text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="index.html#docs">Documentation</a>
+<a class="hover:text-primary transition-colors" href="index.html#architecture">Changelog</a>
+<a class="hover:text-primary transition-colors" href="index.html#install">Termux Guide</a>
+<a class="hover:text-primary transition-colors" href="index.html#architecture">Architecture</a>
+<a class="hover:text-primary transition-colors" href="about.html">About</a>
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="https://github.com/sufiyan-sabeel/Phoenix" rel="noopener noreferrer" target="_blank">
+<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span>GitHub</span>
+</a>
+</div>
+</div>
+</footer>
+
+<!-- SCROLL REVEAL + NAVBAR SCRIPTS -->
+<script>
+const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -40px 0px' };
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => observer.observe(el));
+
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 50) {
+    navbar.classList.add('border-surface-container-highest/50');
+  } else {
+    navbar.classList.remove('border-surface-container-highest/50');
+  }
+});
+</script>
+
+</body>
+</html>
